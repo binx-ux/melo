@@ -2,7 +2,7 @@
 
 Script hub. Pre alpha.
 
-Credits: anthony price, Luna.
+Credits: KYN, Luna.
 
 You can take this code and change it. Keep the credits in the source. Do not sell it. The full terms are in [LICENSE](LICENSE).
 
