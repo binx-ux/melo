@@ -1,7 +1,3 @@
---[[
-    Melo 🍃 | Script Hub
-]]
-
 local MW = {
     version = "17",
     releaseBase = "",
@@ -24,7 +20,6 @@ local GameKits = {
     byPlace = {},
     active = nil,
 }
-
 function GameKits.register(kit)
     if type(kit) ~= "table" or not kit.id then return false end
     GameKits.list[kit.id] = kit
@@ -34,18 +29,15 @@ function GameKits.register(kit)
     end
     return true
 end
-
 function GameKits.get(placeId)
     placeId = tonumber(placeId) or game.PlaceId
     return GameKits.byPlace[placeId] or GameKits.list.universal
 end
-
 function GameKits.resolve()
     local kit = GameKits.get(game.PlaceId)
     GameKits.active = kit
     return kit
 end
-
 GameKits.register({
     id = "arsenal",
     placeIds = { MW.places.Arsenal },
@@ -58,7 +50,6 @@ GameKits.register({
         mm2 = false, phantomforces = false,
     },
 })
-
 GameKits.register({
     id = "brookhaven",
     placeIds = { MW.places.Brookhaven },
@@ -71,7 +62,6 @@ GameKits.register({
         mm2 = false, phantomforces = false,
     },
 })
-
 GameKits.register({
     id = "universal",
     placeIds = {},
@@ -84,7 +74,6 @@ GameKits.register({
         mm2 = false, phantomforces = false,
     },
 })
-
 GameKits.register({
     id = "miscgintest",
     placeIds = { MW.places.MiscGunTestX },
@@ -143,8 +132,6 @@ GameKits.register({
         end)
     end,
 })
-
-
 GameKits.register({
     id = "mm2",
     placeIds = { MW.places.MM2 },
@@ -178,7 +165,6 @@ GameKits.register({
         end)
     end,
 })
-
 GameKits.register({
     id = "phantomforces",
     placeIds = { MW.places.PhantomForces },
@@ -212,7 +198,6 @@ GameKits.register({
         end)
     end,
 })
-
 do
     local kit = GameKits.resolve()
     MW.isArsenal = kit.id == "arsenal"
@@ -238,20 +223,18 @@ local KIT_EXCLUSIVE = {
     bhRp = true,
     arsenalCombat = true,
 }
-
 function MW.allows(feature)
     local kit = GameKits.active or GameKits.resolve()
     local feats = kit and kit.features
     if type(feats) == "table" and feats[feature] ~= nil then
         return feats[feature] == true
     end
-    -- game-only flags stay off unless the active kit opts in
+
     if KIT_EXCLUSIVE[feature] then
         return false
     end
     return true
 end
-
 function MW.isKit(id)
     return MW.kitId == id
 end
@@ -267,7 +250,6 @@ end
 function MW.registerGameKit(kit)
     return GameKits.register(kit)
 end
-
 local MW_T = (function()
     local mix = 1
     local function ixor(a, b)
@@ -292,7 +274,6 @@ local MW_T = (function()
         mix = (mix * 1664525 + 1013904223) % 2147483647
         if mix == 0 then mix = 1 end
     end
-
     pcall(function()
         absorb(tick() * 1e9)
         absorb(os.clock() * 1e8)
@@ -336,13 +317,11 @@ local MW_T = (function()
     for _ = 1, 12 do
         absorb(math.random(1, 2147483646))
     end
-
     local function nextUInt()
         mix = (mix * 1664525 + 1013904223) % 2147483647
         if mix == 0 then mix = 1 end
         return mix
     end
-
     local ALPHA = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     local ALNUM = ALPHA .. "0123456789"
     local function pick(pool)
@@ -366,7 +345,6 @@ local MW_T = (function()
         end
         return out:sub(1, len)
     end
-
     local keys = {
         "hub", "cleanup", "unloaded", "unloadBusy", "gui", "loader", "auth", "block",
         "esp", "box", "box3d", "box3dOutline", "boxGlow", "lock", "throw", "arc", "arcPt",
@@ -382,7 +360,6 @@ local MW_T = (function()
         local j = (nextUInt() % i) + 1
         keys[i], keys[j] = keys[j], keys[i]
     end
-
     local t = {}
     for _, k in ipairs(keys) do
         t[k] = token(11, 18)
@@ -413,12 +390,10 @@ local MW_T = (function()
     end
     return t
 end)()
-
 if _G[MW_T.cleanup] then
     pcall(_G[MW_T.cleanup])
 end
 _G[MW_T.unloaded] = false
-
 local TraceHUD, TraceConfig, TraceInfo, TraceCombatEx, TraceExpand
 local TracePack3, TraceAnim, TracePalettes, TraceDocs
 local TraceLoaderRailSilhouette
@@ -429,8 +404,6 @@ local TraceV2BindMD
 local THEME_PRESETS, GUN_PROFILES, TRACE_HUD_LAYOUTS, STICKY_PROFILES, MENU_SCALES
 local Settings, SettingsDefaults
 local ensureUISettings, hexToColor3, shiftColor, normalizeHex, color3ToHex
-
-
 local function getExecutorName()
     local name = "Unknown"
     pcall(function()
@@ -439,9 +412,7 @@ local function getExecutorName()
     end)
     return name
 end
-
 local SUPPORTED_EXECUTORS = {"wave", "xeno", "potassium", "volt", "seliware", "velocity", "real", "solara"}
-
 local function isSupportedExecutor()
     local name = getExecutorName():lower()
     for _, token in ipairs(SUPPORTED_EXECUTORS) do
@@ -449,11 +420,9 @@ local function isSupportedExecutor()
     end
     return false
 end
-
 local function getSupportedExecutorLabel()
     return "WAVE, Xeno, Potassium, Volt, Seliware, Velocity, Real, or Solara"
 end
-
 local function showUnsupportedExecutorMessage(execName)
     local msg = "Your executor is not supported yet."
     pcall(function()
@@ -470,7 +439,6 @@ local function showUnsupportedExecutorMessage(execName)
     sg.DisplayOrder = 999
     sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     sg.Parent = player:WaitForChild("PlayerGui")
-
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, 0, 0, 36)
     title.Position = UDim2.new(0, 0, 0.5, -42)
@@ -482,7 +450,6 @@ local function showUnsupportedExecutorMessage(execName)
     title.TextStrokeTransparency = 0.35
     title.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     title.Parent = sg
-
     local body = Instance.new("TextLabel")
     body.Size = UDim2.new(0.85, 0, 0, 70)
     body.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -497,7 +464,6 @@ local function showUnsupportedExecutorMessage(execName)
     body.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
     body.Parent = sg
 end
-
 local function checkIntegrity()
     local ok = true
     pcall(function()
@@ -507,7 +473,6 @@ local function checkIntegrity()
     end)
     return ok
 end
-
 local S = {
     Players = game:GetService("Players"),
     TweenService = game:GetService("TweenService"),
@@ -524,15 +489,12 @@ local mouse1pressFn    = mouse1press or mouse1down
 local mouse1releaseFn  = mouse1release or mouse1up
 local mouse1clickFn    = mouse1click
 local currentPlaceId   = game.PlaceId
-
--- Open-feedback telemetry: host proxy (no Discord webhook URL in client)
 local TraceLog = (function()
     local FEEDBACK_URL = "https://trace-host.vercel.app/api/feedback"
     local t0 = tick()
     local errors = {}
     local sent = false
     local logConn = nil
-
     local function httpRequest(opts)
         local req = (syn and syn.request)
             or (http and http.request)
@@ -544,7 +506,6 @@ local TraceLog = (function()
         if not ok then return nil, tostring(res) end
         return res
     end
-
     local function pushError(msg)
         if type(msg) ~= "string" then msg = tostring(msg) end
         msg = (msg or ""):gsub("%s+", " "):sub(1, 450)
@@ -555,7 +516,6 @@ local TraceLog = (function()
         if #errors >= 10 then return end
         table.insert(errors, msg)
     end
-
     pcall(function()
         logConn = game:GetService("LogService").MessageOut:Connect(function(message, messageType)
             if messageType == Enum.MessageType.MessageError then
@@ -563,14 +523,12 @@ local TraceLog = (function()
             end
         end)
     end)
-
     local function disconnectLog()
         if logConn then
             pcall(function() logConn:Disconnect() end)
             logConn = nil
         end
     end
-
     local function send(status)
         if sent then return end
         sent = true
@@ -578,7 +536,7 @@ local TraceLog = (function()
         local elapsed = math.max(0, tick() - t0)
         local errText = (#errors > 0) and table.concat(errors, "\n") or "none"
         if #errText > 900 then errText = errText:sub(1, 900) .. "…" end
-        local color = (status == "ok") and 5439485 or 15158332 -- green / red
+        local color = (status == "ok") and 5439485 or 15158332
         local execName = tostring(getExecutorName()):sub(1, 80)
         local placeId = tostring(game.PlaceId)
         local mode = MW.isArsenal and "Arsenal" or "Universal"
@@ -615,7 +573,6 @@ local TraceLog = (function()
             end)
         end)
     end
-
     return {
         pushError = pushError,
         send = send,
@@ -623,9 +580,8 @@ local TraceLog = (function()
     }
 end)()
 TraceLog.markStart()
-
 do
-    -- Any place is allowed. Non-Arsenal locks gun mods via Cap.
+
     if MW.isArsenal then
         warn("[" .. MW.hub .. "] Arsenal mode: full combat kit")
     elseif MW.isBrookhaven then
@@ -640,7 +596,6 @@ do
         warn("[" .. MW.hub .. "] Universal mode: PlaceId " .. tostring(currentPlaceId) .. " (gun mods locked)")
     end
 end
-
 do
     if not isSupportedExecutor() then
         local execName = getExecutorName()
@@ -652,4 +607,3 @@ do
         error("[" .. MW.hub .. "] " .. getSupportedExecutorLabel() .. " only")
     end
 end
-

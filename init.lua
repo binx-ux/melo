@@ -6,9 +6,7 @@ local FILES = {
     "src/ui.lua",
     "src/boot.lua",
 }
-
 local BASE = "https://raw.githubusercontent.com/binx-ux/melo/main/"
-
 local function readPart(path)
     if type(isfile) == "function" and type(readfile) == "function" and isfile(path) then
         return readfile(path)
@@ -21,12 +19,10 @@ local function readPart(path)
     end
     error("Melo could not read " .. path)
 end
-
 local chunks = {}
 for i = 1, #FILES do
     chunks[i] = readPart(FILES[i])
 end
-
 local loader, err = loadstring(table.concat(chunks, "\n"))
 if not loader then
     error(tostring(err))

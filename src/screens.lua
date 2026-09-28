@@ -4,7 +4,6 @@ function UILib.createFallingParticles(parent, opts)
     local count = opts.count or 40
     local zIndex = opts.zIndex or 1
     local needsVisible = opts.needsVisible
-
     local layer = UILib.newFrame(parent, {
         Name = MW_T.next(10),
         Size = UDim2.new(1, 0, 1, 0),
@@ -13,7 +12,6 @@ function UILib.createFallingParticles(parent, opts)
         BorderSizePixel = 0,
         ZIndex = zIndex,
     })
-
     local particles = {}
     for i = 1, count do
         local sz = math.random(2, 5)
@@ -34,7 +32,6 @@ function UILib.createFallingParticles(parent, opts)
             y = p.Position.Y.Scale,
         }
     end
-
     local alive = true
     local conn = S.RunService.RenderStepped:Connect(function(dt)
         if not alive or not layer.Parent then return end
@@ -51,7 +48,6 @@ function UILib.createFallingParticles(parent, opts)
         end
     end)
     table.insert(allConnections, conn)
-
     local sys = {
         layer = layer,
         conn = conn,
@@ -69,7 +65,6 @@ function UILib.createFallingParticles(parent, opts)
     table.insert(uiParticleSystems, sys)
     return sys
 end
-
 function UILib.fetchReleaseChangelog()
     if not MW.changelogUrl or MW.changelogUrl == "" then return nil end
     local ok, raw = pcall(function() return game:HttpGet(MW.changelogUrl) end)
@@ -78,7 +73,6 @@ function UILib.fetchReleaseChangelog()
     if ok2 and type(data) == "table" then return data end
     return nil
 end
-
 function UILib.getBuiltinChangelog()
     return {
         display = "v0",
@@ -90,11 +84,9 @@ function UILib.getBuiltinChangelog()
         },
     }
 end
-
 ;(function()
     local AudioSys = {}
     local folder, musicSound, lastFire, lastHit, charConns = nil, nil, 0, {}, {}
-
     local function normalizeSoundId(raw)
         if raw == nil then return nil end
         local s = tostring(raw)
@@ -104,7 +96,6 @@ end
         if not id or id == "0" then return nil end
         return "rbxassetid://" .. id
     end
-
     function AudioSys.playMwSound(soundId, volume)
         ensureUISettings()
         local sid = normalizeSoundId(soundId)
@@ -124,13 +115,11 @@ end
             pcall(function() s:Destroy() end)
         end)
     end
-
     function AudioSys.playHitSound()
         ensureUISettings()
         if not Settings.Audio.HitSoundsEnabled then return end
         AudioSys.playMwSound(Settings.Audio.HitSoundId, Settings.Audio.HitVolume)
     end
-
     function AudioSys.playKillSound()
         ensureUISettings()
         if not Settings.Audio.KillSoundsEnabled then return end
@@ -139,7 +128,6 @@ end
         AudioSys.playMwSound(Settings.Audio.KillSoundId, Settings.Audio.KillVolume)
         Settings.Audio.HitPitch = prev
     end
-
     local function tuneMusic(s)
         s.Volume = math.clamp(tonumber(Settings.Audio.MusicVolume) or 0.35, 0, 2)
         s.PlaybackSpeed = math.clamp(tonumber(Settings.Audio.MusicSpeed) or 1, 0.5, 2)
@@ -161,7 +149,6 @@ end
         eq.HighGain = math.clamp(tonumber(Settings.Audio.MusicTreble) or 0, -20, 10)
         eq.MidGain = 0
     end
-
     local function boomboxParent()
         if Settings.Audio.Boombox == false then return nil end
         local char = player.Character
@@ -169,7 +156,6 @@ end
         if not hrp then return nil end
         return hrp
     end
-
     function AudioSys.refreshMusicPlayback()
         ensureUISettings()
         if not musicSound or not musicSound.Parent then
@@ -201,18 +187,15 @@ end
             pcall(function() musicSound:Stop() end)
         end
     end
-
     function AudioSys.pauseMusic()
         if musicSound then pcall(function() musicSound:Pause() end) end
     end
-
     local function clearCharConns(plr)
         local pack = charConns[plr]
         if not pack then return end
         for _, c in ipairs(pack) do pcall(function() c:Disconnect() end) end
         charConns[plr] = nil
     end
-
     local function getCreatorPlayer(hum, char)
         local containers = { hum, char }
         for i = 1, #containers do
@@ -234,14 +217,12 @@ end
         end
         return nil
     end
-
     local function creditLooksLikeUs(plr)
         if currentTarget == plr then return true end
         if isTracking and currentTarget == plr then return true end
         if tick() - lastFire <= 1.6 then return true end
         return false
     end
-
     local function hookCharacter(plr, char)
         if plr == player then return end
         clearCharConns(plr)
@@ -277,7 +258,6 @@ end
         end))
         charConns[plr] = conns
     end
-
     function AudioSys.setup()
         ensureUISettings()
         folder = Instance.new("Folder")
@@ -310,21 +290,18 @@ end
             lastHit[plr.UserId] = nil
         end))
     end
-
     function AudioSys.cleanup()
         pcall(function() if musicSound then musicSound:Stop() end end)
         pcall(function() if folder then folder:Destroy() end end)
         musicSound, folder = nil, nil
     end
     _G[MW_T.audioApi] = AudioSys
-
     _G[MW_T.dockApi] = function(windowLayer, mainFrame, switchMainFn, getActiveMain)
-    -- No floating top dock - main tabs live inside the window only.
+
     pcall(function()
         local old = windowLayer:FindFirstChild(MW_T.topNav)
         if old then old:Destroy() end
     end)
-
     local function ensureScale(obj, name)
         local s = obj:FindFirstChild(name)
         if not s then
@@ -335,7 +312,6 @@ end
         end
         return s
     end
-
     local menuVisToken = 0
     local menuHomePos = mainFrame.Position
     local activeMenuTweens = {}
@@ -378,19 +354,16 @@ end
             end)
         end
     end
-
     local function refreshDock() end
     return nil, setMenuVisible, refreshDock
     end
 end)()
-
 function UILib.showWeakExecutorScreen()
     local reasons = Cap.weakReasons()
     local execName = getExecutorName()
     local accent = hexToColor3(Settings.UI and Settings.UI.AccentHex or "7DD3FC")
     local warnCol = Color3.fromRGB(255, 176, 72)
     local gui = UILib.newScreenGui(MW_T.next(10), 270)
-
     local root = UILib.newFrame(gui, {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
@@ -399,7 +372,6 @@ function UILib.showWeakExecutorScreen()
         ZIndex = 1,
         Active = true,
     })
-
     local card = UILib.newFrame(root, {
         Size = UDim2.new(0, 420, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y,
@@ -425,7 +397,6 @@ function UILib.showWeakExecutorScreen()
     local scale = Instance.new("UIScale")
     scale.Scale = 0.92
     scale.Parent = card
-
     UILib.newLabel(card, {
         Size = UDim2.new(1, 0, 0, 18),
         Text = MW.hub,
@@ -462,7 +433,6 @@ function UILib.showWeakExecutorScreen()
         LayoutOrder = 3,
         ZIndex = 3,
     })
-
     UILib.newLabel(card, {
         Size = UDim2.new(1, 0, 0, 16),
         Text = "Why this is flagged",
@@ -474,7 +444,6 @@ function UILib.showWeakExecutorScreen()
         LayoutOrder = 4,
         ZIndex = 3,
     })
-
     local reasonBox = UILib.newFrame(card, {
         Size = UDim2.new(1, 0, 0, 0),
         AutomaticSize = Enum.AutomaticSize.Y,
@@ -522,7 +491,6 @@ function UILib.showWeakExecutorScreen()
             ZIndex = 4,
         })
     end
-
     local locked = Cap.lockedList()
     UILib.newLabel(card, {
         Size = UDim2.new(1, 0, 0, 16),
@@ -584,7 +552,6 @@ function UILib.showWeakExecutorScreen()
             })
         end
     end
-
     UILib.newLabel(card, {
         Size = UDim2.new(1, 0, 0, 32),
         Text = "Locked items stay off in the menu. Switch executors for full Melo 🍃.",
@@ -597,7 +564,6 @@ function UILib.showWeakExecutorScreen()
         LayoutOrder = 8,
         ZIndex = 3,
     })
-
     local row = UILib.newFrame(card, {
         Size = UDim2.new(1, 0, 0, 36),
         BackgroundTransparency = 1,
@@ -629,11 +595,9 @@ function UILib.showWeakExecutorScreen()
     })
     UILib.corner(unloadBtn, 8)
     UILib.stroke(unloadBtn, Color3.fromRGB(60, 64, 76), 1, 0.2)
-
     UILib.tween(root, 0.28, { BackgroundTransparency = 0.28 }):Play()
     UILib.tween(card, 0.32, { BackgroundTransparency = 0 }, Enum.EasingStyle.Cubic):Play()
     UILib.tween(scale, 0.32, { Scale = 1 }, Enum.EasingStyle.Cubic):Play()
-
     local decision = nil
     local weakScreenT0 = tick()
     continueBtn.MouseButton1Click:Connect(function()
@@ -642,22 +606,19 @@ function UILib.showWeakExecutorScreen()
     unloadBtn.MouseButton1Click:Connect(function()
         decision = false
     end)
-
     while decision == nil and not _G[MW_T.unloaded] do
         task.wait(0.05)
-        -- Don't stall boot forever: auto-continue after a few seconds
+
         if (tick() - weakScreenT0) > 4.5 then
             decision = true
         end
     end
-
     UILib.tween(root, 0.2, { BackgroundTransparency = 1 }):Play()
     UILib.tween(card, 0.2, { BackgroundTransparency = 1 }):Play()
     task.wait(0.12)
     pcall(function() gui:Destroy() end)
     return decision == true
 end
-
 function UILib.showExperimentalNotice()
     local seen = false
     pcall(function()
@@ -741,7 +702,6 @@ function UILib.showExperimentalNotice()
     end
     pcall(function() gui:Destroy() end)
 end
-
 function UILib.showStarterPrompt()
     if readAutoloadName() ~= "" then
         pcall(function()
@@ -837,7 +797,6 @@ function UILib.showStarterPrompt()
     end)
     pcall(function() gui:Destroy() end)
 end
-
 function UILib.showLoader()
     local gui = UILib.newScreenGui(MW_T.loader, 250)
     local accent = Color3.fromRGB(103, 89, 179)
@@ -913,7 +872,6 @@ function UILib.showLoader()
         ZIndex = 13,
     })
     UILib.corner(bar, 2)
-
     local closed = false
     local api = {}
     function api.set(pct, label)
@@ -947,7 +905,6 @@ function UILib.showLoader()
     api.set(0, "starting")
     return api
 end
-
 function UILib.showUnloader()
     local gui = UILib.newScreenGui(MW_T.next(10), 260)
     local accent = Color3.fromRGB(103, 89, 179)
@@ -979,15 +936,12 @@ function UILib.showUnloader()
     task.wait(0.2)
     pcall(function() gui:Destroy() end)
 end
-
 function UILib.showStartupChangelog(hostGui)
     local data = UILib.getBuiltinChangelog()
     if not data then return end
-
     local accent = hexToColor3(Settings.UI and Settings.UI.AccentHex or "7DD3FC")
     local lines = type(data.lines) == "table" and data.lines or {}
     if #lines == 0 and not data.title then return end
-
     local overlay = UILib.newFrame(hostGui, {
         Name = MW_T.changelog,
         Size = UDim2.new(1, 0, 1, 0),
@@ -997,7 +951,6 @@ function UILib.showStartupChangelog(hostGui)
         ZIndex = 120,
         Active = true,
     })
-
     local cardH = 140 + math.min(#lines, 8) * 22 + 54
     local card = UILib.newFrame(overlay, {
         Size = UDim2.new(0, 400, 0, cardH),
@@ -1012,7 +965,6 @@ function UILib.showStartupChangelog(hostGui)
     local cardScale = Instance.new("UIScale")
     cardScale.Scale = 0.86
     cardScale.Parent = card
-
     local badge = UILib.newLabel(card, {
         Size = UDim2.new(0, 56, 0, 20),
         Position = UDim2.new(0, 14, 0, 14),
@@ -1026,7 +978,6 @@ function UILib.showStartupChangelog(hostGui)
         TextTransparency = 1,
         ZIndex = 122,
     })
-
     local title = UILib.newLabel(card, {
         Size = UDim2.new(1, -90, 0, 24),
         Position = UDim2.new(0, 78, 0, 12),
@@ -1039,7 +990,6 @@ function UILib.showStartupChangelog(hostGui)
         TextTransparency = 1,
         ZIndex = 122,
     })
-
     local whats = UILib.newLabel(card, {
         Size = UDim2.new(1, -28, 0, 16),
         Position = UDim2.new(0, 14, 0, 40),
@@ -1051,7 +1001,6 @@ function UILib.showStartupChangelog(hostGui)
         TextTransparency = 1,
         ZIndex = 122,
     })
-
     local lineLabels = {}
     local y = 60
     for i, line in ipairs(lines) do
@@ -1079,7 +1028,6 @@ function UILib.showStartupChangelog(hostGui)
         table.insert(lineLabels, {bullet = bullet, lbl = lbl})
         y = y + 22
     end
-
     local continueBtn = UILib.newButton(card, {
         Size = UDim2.new(1, -28, 0, 34),
         Position = UDim2.new(0, 14, 1, -44),
@@ -1093,7 +1041,6 @@ function UILib.showStartupChangelog(hostGui)
         TextTransparency = 1,
         ZIndex = 123,
     })
-
     local dismissed = false
     local function dismiss()
         if dismissed then return end
@@ -1115,7 +1062,6 @@ function UILib.showStartupChangelog(hostGui)
             end
         end
     end)
-
     UILib.tween(overlay, 0.28, {BackgroundTransparency = 0.42}):Play()
     UILib.tween(card, 0.36, {BackgroundTransparency = 0, Position = UDim2.new(0.5, 0, 0.5, 0)}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
     UILib.tween(cardScale, 0.36, {Scale = 1}, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
@@ -1131,11 +1077,9 @@ function UILib.showStartupChangelog(hostGui)
             end)
         end
     end)
-
     task.delay(14, dismiss)
     while not dismissed do task.wait(0.03) end
 end
-
 function UILib.createFOVRenderer(screenGui)
     local fovDrawing = nil
     local fovDots = {}
@@ -1146,7 +1090,6 @@ function UILib.createFOVRenderer(screenGui)
     local fovWhite = Color3.fromRGB(255, 255, 255)
     local spinAngle = 0
     local lastSpinT = tick()
-
     pcall(function()
         if Drawing and Drawing.new then
             fovDrawing = Drawing.new("Circle")
@@ -1169,7 +1112,6 @@ function UILib.createFOVRenderer(screenGui)
             useDrawing = true
         end
     end)
-
     if not useDrawing then
         fovGui = UILib.newFrame(screenGui, {
             Name = "fc",
@@ -1205,7 +1147,6 @@ function UILib.createFOVRenderer(screenGui)
             fovDots[i] = d
         end
     end
-
     local silentDrawing, silentGui, silentStroke = nil, nil, nil
     pcall(function()
         if useDrawing and Drawing and Drawing.new then
@@ -1240,7 +1181,6 @@ function UILib.createFOVRenderer(screenGui)
         silentStroke.Transparency = 0.45
         silentStroke.Parent = silentGui
     end
-
     local function hideDots()
         for i = 1, #fovDots do
             local d = fovDots[i]
@@ -1249,17 +1189,15 @@ function UILib.createFOVRenderer(screenGui)
             end
         end
     end
-
     local function stepSpin()
         local now = tick()
         local dt = math.clamp(now - lastSpinT, 0, 0.05)
         lastSpinT = now
-        -- frame-timed so speed stays even across FPS; ~0.28 rev/sec
+
         spinAngle = spinAngle + dt * 0.28 * math.pi * 2
         if spinAngle > math.pi * 2 then spinAngle = spinAngle % (math.pi * 2) end
         return spinAngle
     end
-
     return function(radius, visible, opacity, silentRadius, silentVisible)
         opacity = opacity or 0.5
         local style = (Settings.Aimbot and Settings.Aimbot.FOVStyle) or "Circle"
@@ -1269,7 +1207,6 @@ function UILib.createFOVRenderer(screenGui)
         local dotN = math.clamp(math.floor(tonumber(Settings.Aimbot and Settings.Aimbot.FOVDots) or 12), 4, maxDots)
         local dotSz = 2.5
         local spin = stepSpin()
-
         if useDrawing and fovDrawing then
             fovDrawing.Color = fovWhite
             if not cam or not visible then
@@ -1348,28 +1285,21 @@ function UILib.createFOVRenderer(screenGui)
         end
     end
 end
-
--- ESP Preview UI removed; keep stub so any old call sites stay safe.
 function UILib.mountESPPreview(makeFloat, winW, winH)
     return nil
 end
-
-
 function UILib.setupWorldOverlays(overlayLayer)
     local updateFOV = UILib.createFOVRenderer(overlayLayer)
-
     local tracerCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 1})
     local TPOOL = 24; local tPool = {}; local tIdx = 0
     for i = 1, TPOOL do local l = Instance.new("Frame"); l.BackgroundColor3 = Color3.new(1, 1, 1); l.BorderSizePixel = 0; l.AnchorPoint = Vector2.new(0.5, 0.5); l.Visible = false; l.ZIndex = 2; l.Parent = tracerCont; tPool[i] = l end
     local function resetTracers() for i = 1, tIdx do tPool[i].Visible = false end; tIdx = 0 end
     local function getTracerLine() tIdx = tIdx + 1; if tIdx > TPOOL then tIdx = TPOOL; return nil end; return tPool[tIdx] end
-
     local skelCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 1})
     local SPOOL = 420; local sPool = {}; local sIdx = 0
     for i = 1, SPOOL do local l = Instance.new("Frame"); l.BackgroundColor3 = Color3.new(1, 1, 1); l.BorderSizePixel = 0; l.AnchorPoint = Vector2.new(0.5, 0.5); l.Visible = false; l.ZIndex = 2; l.Parent = skelCont; sPool[i] = l end
     local function resetSkel() for i = 1, sIdx do sPool[i].Visible = false end; sIdx = 0 end
     local function getSkelLine() sIdx = sIdx + 1; if sIdx > SPOOL then return nil end; return sPool[sIdx] end
-
     local box2DCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 2})
     local BPOOL = 192; local bPool = {}; local bIdx = 0
     for i = 1, BPOOL do
@@ -1406,7 +1336,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         drawBox2DLine(maxX, maxY, minX, maxY, col, thick, tr)
         drawBox2DLine(minX, maxY, minX, minY, col, thick, tr)
     end
-
     local fill2DCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 1})
     local FPOOL = 24; local fPool = {}; local fIdx = 0
     for i = 1, FPOOL do
@@ -1418,7 +1347,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         local f = fPool[fIdx]; f.Size = UDim2.new(0, maxX - minX, 0, maxY - minY); f.Position = UDim2.new(0, minX, 0, minY)
         f.BackgroundColor3 = col; f.BackgroundTransparency = tr or 0.75; f.Visible = true
     end
-
     local hpBarCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 2})
     local HPOOL = 40; local hPool = {}; local hIdx = 0
     for i = 1, HPOOL do
@@ -1439,7 +1367,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         bar.fill.Size = UDim2.new(1, 0, pct, 0); bar.fill.BackgroundColor3 = col
         bar.fill.BackgroundTransparency = 0.02 + (fade or 0) * 0.25
     end
-
     local dotCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 3})
     local DPOOL = 24; local dPool = {}; local dIdx = 0
     for i = 1, DPOOL do
@@ -1458,7 +1385,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         d.BackgroundColor3 = col; d.BackgroundTransparency = 0.05; d.Visible = true
         if entry.stroke then entry.stroke.Color = Color3.fromRGB(0, 0, 0) end
     end
-
     local arrowCont = UILib.newFrame(overlayLayer, {Name = MW_T.next(8), Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, ZIndex = 3})
     local APOOL = 16; local aPool = {}
     for i = 1, APOOL do
@@ -1469,7 +1395,6 @@ function UILib.setupWorldOverlays(overlayLayer)
             Visible = false,
             ZIndex = 4,
         })
-
         local ring = UILib.newFrame(c, {
             Size = UDim2.new(0, 40, 0, 40),
             AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1482,7 +1407,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         ring.ClipsDescendants = true
         UILib.circle(ring)
         local ringStroke = UILib.stroke(ring, Theme.TextAccent, 2, 0.05)
-
         local pfp = Instance.new("ImageLabel")
         pfp.Name = MW_T.next(8)
         pfp.Size = UDim2.new(1, -4, 1, -4)
@@ -1493,7 +1417,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         pfp.ZIndex = 3
         pfp.Parent = ring
         UILib.circle(pfp)
-
         local tip = UILib.newFrame(c, {
             Size = UDim2.new(0, 9, 0, 9),
             AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1503,7 +1426,6 @@ function UILib.setupWorldOverlays(overlayLayer)
             Rotation = 45,
             ZIndex = 5,
         })
-
         local dl = UILib.newLabel(c, {
             Size = UDim2.new(1, 0, 0, 12),
             Position = UDim2.new(0, 0, 1, -11),
@@ -1515,7 +1437,6 @@ function UILib.setupWorldOverlays(overlayLayer)
             TextXAlignment = Enum.TextXAlignment.Center,
             ZIndex = 6,
         })
-
         aPool[i] = {
             container = c,
             ring = ring,
@@ -1548,16 +1469,13 @@ function UILib.setupWorldOverlays(overlayLayer)
         local sz = math.max(22, Settings.ESP.ArrowSize or 28)
         local showPfp = (Settings.ESP.ArrowShowPfp ~= false) and not isStreamerActive()
         local ringSize = sz + 10
-
         ad.container.Size = UDim2.new(0, ringSize + 18, 0, ringSize + 26)
         ad.container.Position = UDim2.new(0, ax, 0, ay)
-
         ad.ring.Size = UDim2.new(0, ringSize, 0, ringSize)
         ad.ring.Position = UDim2.new(0.5, 0, 0.42, 0)
         ad.ring.BackgroundColor3 = Theme.CardBg or Color3.fromRGB(12, 12, 14)
         ad.ringStroke.Color = col
         ad.ringStroke.Thickness = 2
-
         if showPfp then
             ad.pfp.Visible = true
             if ad.lastUserId ~= target.UserId then
@@ -1574,21 +1492,17 @@ function UILib.setupWorldOverlays(overlayLayer)
             ad.ring.BackgroundTransparency = 0.25
         end
         if showPfp then ad.ring.BackgroundTransparency = 0.08 end
-
         local tipR = ringSize * 0.5 + 5
         ad.tip.BackgroundColor3 = col
         ad.tip.Position = UDim2.new(0.5, math.sin(ang) * tipR, 0.42, -math.cos(ang) * tipR)
         ad.tip.Rotation = 45
         ad.tip.Visible = true
-
         ad.distLabel.Text = math.floor(dist) .. "m"
         ad.distLabel.TextColor3 = col
     end
-
     overlayResetFn = function()
         resetTracers(); resetSkel(); resetArrows(); resetBox2D(); resetBoxFill(); resetHealthBars(); resetHeadDots()
     end
-
     local radarCorner = nil
     local radarStroke = nil
     local radarBgGrad = nil
@@ -1604,7 +1518,7 @@ function UILib.setupWorldOverlays(overlayLayer)
                     if c then c.CornerRadius = UDim.new(0, 10) end
                 end)
             end
-            -- Soft perspective: shrink lower half rings via transparency bias
+
             for i, rs in ipairs(radarRingStrokes) do
                 rs.Transparency = 0.72 - i * 0.04
             end
@@ -1622,7 +1536,6 @@ function UILib.setupWorldOverlays(overlayLayer)
             end
         end
     end
-
     local radarSize = Settings.Radar.Size
     local radarGui = UILib.newFrame(overlayLayer, {
         Name = MW_T.radar,
@@ -1638,7 +1551,6 @@ function UILib.setupWorldOverlays(overlayLayer)
     radarCorner = UILib.corner(radarGui, 100)
     radarStroke = UILib.stroke(radarGui, Theme.RadarBorder, 2, 0.12)
     UILib.shadow(radarGui, 16, 0.55)
-
     local radarBg = UILib.newFrame(radarGui, {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundColor3 = Color3.new(1, 1, 1),
@@ -1652,7 +1564,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         NumberSequenceKeypoint.new(0, 0.08),
         NumberSequenceKeypoint.new(1, 0.22),
     })
-
     for i, scale in ipairs({0.34, 0.66, 0.94}) do
         local ring = UILib.newFrame(radarGui, {
             Size = UDim2.new(scale, 0, scale, 0),
@@ -1666,7 +1577,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         local ringStroke = UILib.stroke(ring, Color3.fromRGB(255, 255, 255), 1, 0.82 - i * 0.06)
         radarRingStrokes[i] = ringStroke
     end
-
     local function makeCrossLine(w, h, x, y, rot)
         local line = UILib.newFrame(radarGui, {
             Size = UDim2.new(0, w, 0, h),
@@ -1682,7 +1592,6 @@ function UILib.setupWorldOverlays(overlayLayer)
     end
     makeCrossLine(radarSize - 12, 1, 0, 0, 0)
     makeCrossLine(1, radarSize - 12, 0, 0, 0)
-
     local northLbl = UILib.newLabel(radarGui, {
         Size = UDim2.new(0, 12, 0, 12),
         AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1695,7 +1604,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         ZIndex = 3,
         Name = MW_T.next(8),
     })
-
     local selfDot = UILib.newFrame(radarGui, {
         Size = UDim2.new(0, 8, 0, 8),
         AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1706,7 +1614,6 @@ function UILib.setupWorldOverlays(overlayLayer)
     })
     UILib.corner(selfDot, 100)
     UILib.stroke(selfDot, Theme.TextAccent, 1, 0.35)
-
     local selfHeading = UILib.newFrame(radarGui, {
         Size = UDim2.new(0, 0, 0, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1726,7 +1633,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         Font = Enum.Font.GothamBold,
         BackgroundTransparency = 1,
     })
-
     table.insert(themeCallbacks, function()
         if radarStroke then radarStroke.Color = Theme.RadarBorder end
         if radarBgGrad then
@@ -1737,13 +1643,11 @@ function UILib.setupWorldOverlays(overlayLayer)
         end
         northLbl.TextColor3 = Theme.TextAccent
     end)
-
     applyRadarStyle()
     local radarDots = {}
     local radarNameLabels = {}
     local radarDotGlows = {}
     local radarAltLabels = {}
-
     local function setRadarVisible(on)
         if not radarGui then return end
         radarGui.Visible = on
@@ -1755,7 +1659,6 @@ function UILib.setupWorldOverlays(overlayLayer)
     end
     _G[MW_T.radarApi] = { setVisible = setRadarVisible, applyStyle = applyRadarStyle }
 
-    -- VisPerf.espRt packs locals for upvalue limit
     VisPerf.espRt = {
         updateFOV = updateFOV,
         resetTracers = resetTracers,
@@ -1788,7 +1691,6 @@ function UILib.setupWorldOverlays(overlayLayer)
         local rt = VisPerf.espRt
         if rt and rt.targetHL then pcall(function() rt.targetHL:Destroy() end); rt.targetHL = nil end
     end
-
     table.insert(allConnections,S.RunService.RenderStepped:Connect(function(dt)
         local rt = VisPerf.espRt
         local updateFOV, resetTracers, resetSkel, resetArrows = rt.updateFOV, rt.resetTracers, rt.resetSkel, rt.resetArrows
@@ -2003,7 +1905,7 @@ function UILib.setupWorldOverlays(overlayLayer)
                     end
                     local distNorm = inRange and (flatDist / math.max(radarRange, 1)) or 1
                     if is3D then
-                        -- Height foreshortening: higher targets sit up / closer to center
+
                         local heightNorm = math.clamp(heightDiff / math.max(radarRange * 0.55, 1), -1.15, 1.15)
                         distNorm = distNorm * (1 - math.clamp(math.abs(heightNorm) * 0.18, 0, 0.35))
                         local nx = math.sin(ang) * distNorm * rh * radarScale
@@ -2033,7 +1935,7 @@ function UILib.setupWorldOverlays(overlayLayer)
                         dot.Visible = true
                         local depthScale = math.clamp(1.2 - (flatDist / math.max(radarRange, 1)) * 0.5 + heightNorm * 0.12, 0.55, 1.45)
                         local dotSize = math.max(4, math.floor((heightDiff > 6 and 7 or 6) * depthScale))
-                        -- Diamond-ish for elevated, circle for ground via corner radius
+
                         pcall(function()
                             local c = dot:FindFirstChildOfClass("UICorner")
                             if c then c.CornerRadius = UDim.new(0, math.abs(heightDiff) > 8 and 2 or 100) end
@@ -2175,7 +2077,7 @@ function UILib.setupWorldOverlays(overlayLayer)
             local isESPTarget=isValidESPTarget(player,target)
             if not isESPTarget then if espObjects[target.UserId] then removeESP(target) end; break end
             espActiveThisFrame[target.UserId] = true
-            -- Far players: only refresh on heavy ticks (biggest ESP lag source)
+
             local refreshLabels = doHeavy or (not skipFarHeavy and (doOverlay or VisPerf.camMoved))
             if adornee and (refreshLabels or doHeavy) then
                 if not espObjects[target.UserId] then createESP(target) end
@@ -2194,7 +2096,6 @@ function UILib.setupWorldOverlays(overlayLayer)
                         end
                         d.billboard.MaxDistance=Settings.ESP.RenderDistance or 8000
                         d.billboard.Enabled=true
-
                         if refreshLabels then
                             local nextMeta = buildESPMetaText(dist, hp, maxhp)
                             local nextName = truncateESPName(getDisplayName(target))
@@ -2202,7 +2103,6 @@ function UILib.setupWorldOverlays(overlayLayer)
                             local nextWeapon = (Settings.ESP.WeaponLabels and dist <= wpnMax) and (getPlayerWeaponName(target) or "") or ""
                             local labelsDirty = nextName ~= d.lastName or nextMeta ~= d.lastMeta or nextWeapon ~= (d.lastWeapon or "")
                                 or espNow - (d.lastLabelAt or 0) >= VisPerf.label
-
                             if labelsDirty then
                                 d.lastLabelAt = espNow
                                 d.lastName = nextName
@@ -2215,7 +2115,7 @@ function UILib.setupWorldOverlays(overlayLayer)
                         hideESPVisuals(d)
                         break
                     end
-                    -- Chams throttled to heavy tick (Highlight writes are expensive)
+
                     if doHeavy and not skipFarHeavy then
                         applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, chamsCol, "chams")
                         if box3DOn then updateBox3D(d, tc, boxCol) else hideBox3D(d) end
@@ -2396,7 +2296,6 @@ function UILib.setupWorldOverlays(overlayLayer)
             end
         end
     end))
-
     table.insert(allConnections, S.Players.PlayerRemoving:Connect(function(t)
         clearRigCache(t.UserId)
         if espObjects[t.UserId] then removeESP(t) end
@@ -2414,4 +2313,3 @@ function UILib.setupWorldOverlays(overlayLayer)
     table.insert(allConnections,S.Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Connect(function() onPlayerCharRefresh(p) end) end))
     for _,p in ipairs(S.Players:GetPlayers()) do p.CharacterAdded:Connect(function() onPlayerCharRefresh(p) end) end
 end
-

@@ -1,4 +1,3 @@
--- Menu chrome split for Luau locals
 UILib.MD = {
     AIMBOT_HOLD_BIND = AIMBOT_HOLD_BIND,
     Icons = Icons,
@@ -93,19 +92,15 @@ UILib.MD = {
     updateGunWireframe = updateGunWireframe,
     weaponCache = weaponCache,
 }
-
--- ColorPicker: HSV popup matching classic cheat-menu picker (SV square + hue + alpha)
 UILib.ColorPicker = UILib.ColorPicker or {}
 do
     local CP = UILib.ColorPicker
     CP._active = nil
-
     local function clamp(v, a, b)
         if v < a then return a end
         if v > b then return b end
         return v
     end
-
     function CP.close()
         if CP._active then
             pcall(function()
@@ -114,23 +109,19 @@ do
             CP._active = nil
         end
     end
-
     function CP.open(opts)
         opts = opts or {}
         CP.close()
         local parent = opts.parent
         if not parent then return nil end
-
         local pickerSize = opts.pickerSize or 120
         local hueBarSize = opts.hueBarSize or 8
         local pad = opts.pad or 8
         local color = opts.color or Color3.fromRGB(255, 80, 80)
         local alpha = clamp(tonumber(opts.alpha) or 1, 0, 1)
         local h, s, v = color:ToHSV()
-
         local winW = pickerSize + hueBarSize + pad * 3
         local winH = pickerSize + hueBarSize + pad * 3
-
         local root = Instance.new("Frame")
         root.Name = "ColorPicker"
         root.Size = UDim2.fromOffset(winW, winH)
@@ -143,7 +134,6 @@ do
         rootStroke.Color = Color3.fromRGB(70, 70, 78)
         rootStroke.Thickness = 1
         rootStroke.Parent = root
-
         local placedAt = Vector2.new(0, 0)
         if opts.anchor then
             local ax = opts.anchor.X
@@ -160,7 +150,6 @@ do
             placedAt = Vector2.new(math.floor(vs.X * 0.5 - winW * 0.5), math.floor(vs.Y * 0.5 - winH * 0.5))
             root.Position = UDim2.fromOffset(placedAt.X, placedAt.Y)
         end
-
         local rcPicker = Instance.new("Frame")
         rcPicker.Name = "SV"
         rcPicker.Size = UDim2.fromOffset(pickerSize, pickerSize)
@@ -174,7 +163,6 @@ do
         svHue.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromHSV(h, 1, 1))
         svHue.Rotation = 0
         svHue.Parent = rcPicker
-
         local svBlack = Instance.new("Frame")
         svBlack.Size = UDim2.fromScale(1, 1)
         svBlack.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -188,12 +176,10 @@ do
         })
         svShade.Rotation = 90
         svShade.Parent = svBlack
-
         local svStroke = Instance.new("UIStroke")
         svStroke.Color = Color3.fromRGB(60, 60, 66)
         svStroke.Thickness = 1
         svStroke.Parent = rcPicker
-
         local rcHueBar = Instance.new("Frame")
         rcHueBar.Name = "Hue"
         rcHueBar.Size = UDim2.fromOffset(hueBarSize, pickerSize)
@@ -229,7 +215,6 @@ do
         hueStroke.Color = Color3.fromRGB(60, 60, 66)
         hueStroke.Thickness = 1
         hueStroke.Parent = rcHueBar
-
         local rcAlphaBar = Instance.new("Frame")
         rcAlphaBar.Name = "Alpha"
         rcAlphaBar.Size = UDim2.fromOffset(pickerSize, hueBarSize)
@@ -246,7 +231,6 @@ do
         alphaStroke.Color = Color3.fromRGB(60, 60, 66)
         alphaStroke.Thickness = 1
         alphaStroke.Parent = rcAlphaBar
-
         local function mkIndicator(sz)
             local f = Instance.new("Frame")
             f.Size = UDim2.fromOffset(sz, sz)
@@ -262,7 +246,6 @@ do
             st.Parent = f
             return f
         end
-
         local ptPicker = mkIndicator(6)
         local ptHue = Instance.new("Frame")
         ptHue.Size = UDim2.fromOffset(hueBarSize + 4, 4)
@@ -276,7 +259,6 @@ do
         ptHueSt.Transparency = 0.4
         ptHueSt.Thickness = 1
         ptHueSt.Parent = ptHue
-
         local ptAlpha = Instance.new("Frame")
         ptAlpha.Size = UDim2.fromOffset(4, hueBarSize + 4)
         ptAlpha.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -289,43 +271,35 @@ do
         ptAlphaSt.Transparency = 0.4
         ptAlphaSt.Thickness = 1
         ptAlphaSt.Parent = ptAlpha
-
         local state = {
             h = h, s = s, v = v, a = alpha,
             drag = -1,
             owner = opts.owner,
             destroy = nil,
         }
-
         local function syncIndicators()
             local px = pad + clamp(state.s, 0, 1) * (pickerSize - 1)
             local py = pad + (1 - clamp(state.v, 0, 1)) * (pickerSize - 1)
             ptPicker.Position = UDim2.fromOffset(px, py)
-
             local hy = pad + clamp(state.h, 0, 1) * (pickerSize - 1)
             ptHue.Position = UDim2.fromOffset(pad + pickerSize + pad + hueBarSize * 0.5, hy)
-
             local ax = pad + clamp(state.a, 0, 1) * (pickerSize - 1)
             ptAlpha.Position = UDim2.fromOffset(ax, pad + pickerSize + pad + hueBarSize * 0.5)
         end
-
         local function refreshSVHue()
             svHue.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromHSV(state.h, 1, 1))
         end
-
         local function emit()
             local c3 = Color3.fromHSV(state.h, state.s, state.v)
             if opts.onChanged then
                 pcall(opts.onChanged, c3, state.a)
             end
         end
-
         local conns = {}
         local uis = S.UserInputService
         local hueX0 = pad + pickerSize + pad
         local alphaY0 = pad + pickerSize + pad
 
-        -- Use laid-out offsets; fall back if gethui AbsolutePosition space differs
         local function localMouse()
             local m = uis:GetMouseLocation()
             local lx = m.X - placedAt.X
@@ -348,7 +322,6 @@ do
             end
             return lx, ly
         end
-
         local function hitZone(lx, ly)
             if lx >= pad and lx <= pad + pickerSize and ly >= pad and ly <= pad + pickerSize then
                 return 0
@@ -364,7 +337,6 @@ do
             end
             return -1
         end
-
         local function applyFromLocal(lx, ly)
             if state.drag == 0 then
                 state.s = clamp((lx - pad) / math.max(pickerSize - 1, 1), 0, 1)
@@ -380,7 +352,6 @@ do
             syncIndicators()
             emit()
         end
-
         table.insert(conns, uis.InputBegan:Connect(function(input)
             if isUnloading or _G[MW_T.unloaded] then return end
             if input.UserInputType ~= Enum.UserInputType.MouseButton1
@@ -407,21 +378,18 @@ do
                 state.drag = -1
             end
         end))
-
         state.destroy = function()
             for _, c in ipairs(conns) do pcall(function() c:Disconnect() end) end
             pcall(function() root:Destroy() end)
             if opts.onClose then pcall(opts.onClose) end
             if CP._active == state then CP._active = nil end
         end
-
         refreshSVHue()
         syncIndicators()
         CP._active = state
         return state
     end
 
-    -- Small swatch button that toggles the popup (like rcSelectable)
     function CP.attachSwatch(swatch, opts)
         opts = opts or {}
         if not swatch then return end
@@ -460,14 +428,11 @@ do
         return btn
     end
 end
-
--- Color Table: theme + ESP hex rows (ScreenGui overlay; Drawing opens it)
 UILib.ColorTable = UILib.ColorTable or {}
 do
     local CT = UILib.ColorTable
     CT.gui = nil
     CT.rows = {}
-
     local THEME_ROWS = {
         { key = "AccentHex", label = "Accent", bag = "UI" },
         { key = "BackgroundHex", label = "Background", bag = "UI" },
@@ -486,7 +451,6 @@ do
         { key = "OutlineHex", label = "ESP Outline", bag = "ESP" },
         { key = "NameHex", label = "ESP Name", bag = "ESP" },
     }
-
     local function bagTable(bag)
         if bag == "UI" then
             ensureUISettings()
@@ -495,7 +459,6 @@ do
         Settings.ESP = Settings.ESP or {}
         return Settings.ESP
     end
-
     local function getHex(row)
         local b = bagTable(row.bag)
         local h = normalizeHex(b[row.key])
@@ -506,7 +469,6 @@ do
         if row.bag == "UI" then return "6759B3" end
         return "FFFFFF"
     end
-
     local function setHex(row, hex)
         local h = normalizeHex(hex)
         if not h then return false end
@@ -519,14 +481,12 @@ do
         end
         return true
     end
-
     function CT.close()
         if UILib.ColorPicker and UILib.ColorPicker.close then UILib.ColorPicker.close() end
         if CT.gui then pcall(function() CT.gui:Destroy() end) end
         CT.gui = nil
         CT.rows = {}
     end
-
     function CT.apply()
         for _, r in ipairs(CT.rows) do
             if r.box then
@@ -546,7 +506,6 @@ do
         if sendNotification then sendNotification("Color Table", "Applied", 1.5)
         elseif TD and TD.Notify then TD.Notify("Colors applied", 1.5) end
     end
-
     function CT.exportJSON()
         local out = { UI = {}, ESP = {}, LinkToAccent = Settings.ESP and Settings.ESP.LinkToAccent }
         for _, def in ipairs(THEME_ROWS) do out.UI[def.key] = getHex(def) end
@@ -556,7 +515,6 @@ do
         end)
         return ok and json or nil
     end
-
     function CT.importJSON(raw)
         local ok, data = pcall(function()
             return game:GetService("HttpService"):JSONDecode(tostring(raw or ""))
@@ -580,7 +538,6 @@ do
         CT.apply()
         return true
     end
-
     function CT.open(focusEsp)
         CT.close()
         ensureUISettings()
@@ -598,11 +555,9 @@ do
         end)
         sg.Parent = (gethui and gethui()) or pg
         CT.gui = sg
-
         local accent = hexToColor3(Settings.UI.AccentHex or "6759B3")
         local bg = hexToColor3(Settings.UI.BackgroundHex or "16161F")
         local surface = hexToColor3(Settings.UI.SurfaceHex or "181925")
-
         local panel = Instance.new("Frame")
         panel.Size = UDim2.fromOffset(420, 520)
         panel.Position = UDim2.new(0.5, -210, 0.5, -260)
@@ -615,7 +570,6 @@ do
         stroke.Thickness = 1
         stroke.Transparency = 0.45
         stroke.Parent = panel
-
         local accentBar = Instance.new("Frame")
         accentBar.Size = UDim2.new(0, 3, 1, -20)
         accentBar.Position = UDim2.new(0, 8, 0, 10)
@@ -623,7 +577,6 @@ do
         accentBar.BorderSizePixel = 0
         accentBar.Parent = panel
         Instance.new("UICorner", accentBar).CornerRadius = UDim.new(0, 2)
-
         local title = Instance.new("TextLabel")
         title.BackgroundTransparency = 1
         title.Size = UDim2.new(1, -50, 0, 28)
@@ -634,7 +587,6 @@ do
         title.TextColor3 = Color3.fromRGB(240, 240, 245)
         title.Text = "Color Table"
         title.Parent = panel
-
         local closeBtn = Instance.new("TextButton")
         closeBtn.Size = UDim2.fromOffset(28, 28)
         closeBtn.Position = UDim2.new(1, -36, 0, 10)
@@ -647,7 +599,6 @@ do
         closeBtn.Parent = panel
         Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
         closeBtn.MouseButton1Click:Connect(CT.close)
-
         local scroll = Instance.new("ScrollingFrame")
         scroll.Size = UDim2.new(1, -28, 1, -110)
         scroll.Position = UDim2.fromOffset(18, 44)
@@ -657,7 +608,6 @@ do
         scroll.ScrollBarImageColor3 = accent
         scroll.CanvasSize = UDim2.fromOffset(0, 0)
         scroll.Parent = panel
-
         local y = 0
         local function section(label)
             local l = Instance.new("TextLabel")
@@ -672,7 +622,6 @@ do
             l.Parent = scroll
             y = y + 22
         end
-
         local function addRow(def)
             local row = Instance.new("Frame")
             row.Size = UDim2.new(1, -8, 0, 28)
@@ -681,7 +630,6 @@ do
             row.BorderSizePixel = 0
             row.Parent = scroll
             Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
-
             local lab = Instance.new("TextLabel")
             lab.BackgroundTransparency = 1
             lab.Size = UDim2.new(0.38, 0, 1, 0)
@@ -692,7 +640,6 @@ do
             lab.TextColor3 = Color3.fromRGB(190, 192, 202)
             lab.Text = def.label
             lab.Parent = row
-
             local box = Instance.new("TextBox")
             box.Size = UDim2.new(0.42, -4, 0, 22)
             box.Position = UDim2.new(0.38, 0, 0.5, -11)
@@ -705,7 +652,6 @@ do
             box.Text = "#" .. getHex(def)
             box.Parent = row
             Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
-
             local sw = Instance.new("Frame")
             sw.Size = UDim2.fromOffset(18, 18)
             sw.Position = UDim2.new(1, -26, 0.5, -9)
@@ -717,7 +663,6 @@ do
             swStroke.Color = Color3.fromRGB(90, 90, 100)
             swStroke.Thickness = 1
             swStroke.Parent = sw
-
             box.FocusLost:Connect(function()
                 if setHex(def, box.Text) then
                     box.Text = "#" .. getHex(def)
@@ -726,7 +671,6 @@ do
                     box.Text = "#" .. getHex(def)
                 end
             end)
-
             UILib.ColorPicker.attachSwatch(sw, {
                 parent = sg,
                 getColor = function()
@@ -739,11 +683,9 @@ do
                     sw.BackgroundColor3 = c3
                 end,
             })
-
             table.insert(CT.rows, { def = def, box = box, swatch = sw })
             y = y + 32
         end
-
         section("Theme")
         for _, def in ipairs(THEME_ROWS) do addRow(def) end
         section("ESP")
@@ -752,7 +694,6 @@ do
         if focusEsp then
             scroll.CanvasPosition = Vector2.new(0, 150)
         end
-
         local link = Instance.new("TextButton")
         link.Size = UDim2.new(1, -36, 0, 22)
         link.Position = UDim2.new(0, 18, 1, -58)
@@ -769,7 +710,6 @@ do
             link.Text = (Settings.ESP.LinkToAccent ~= false) and "ESP linked to Accent (click to unlink)" or "ESP custom colors (click to link Accent)"
             CT.apply()
         end)
-
         local function mkBtn(text, x, cb)
             local b = Instance.new("TextButton")
             b.Size = UDim2.fromOffset(90, 24)
@@ -785,7 +725,6 @@ do
             b.MouseButton1Click:Connect(cb)
             return b
         end
-
         mkBtn("Apply", 18, CT.apply)
         mkBtn("Reset", 114, function()
             if resetThemeDefaults then resetThemeDefaults() end
@@ -818,11 +757,9 @@ do
             end
         end)
     end
-
     UILib.openColorTable = function(focusEsp) CT.open(focusEsp == true) end
     UILib.closeColorTable = CT.close
 end
-
 local TraceDraw = (function()
     local TD = {
         drawings = {},
@@ -850,28 +787,23 @@ local TraceDraw = (function()
         },
         z = { window = 1000, dropdown = 1200, notif = 1400 },
     }
-
     local UIS = S.UserInputService
     local RS = S.RunService
     local TS = S.TweenService
     local cam = S.Workspace.CurrentCamera
-
     local function hasDrawing()
         return type(Drawing) == "table" and type(Drawing.new) == "function"
     end
-
     local function conn(sig, fn)
         local c = sig:Connect(fn)
         table.insert(TD.connections, c)
         return c
     end
-
     local function destroyDrawing(obj)
         pcall(function()
             if obj and obj.Remove then obj:Remove() end
         end)
     end
-
     local function draw(class, props)
         if not hasDrawing() then return nil end
         local ok, obj = pcall(function() return Drawing.new(class) end)
@@ -885,17 +817,14 @@ local TraceDraw = (function()
         table.insert(TD.drawings, obj)
         return obj
     end
-
     local function mousePos()
         return UIS:GetMouseLocation()
     end
-
     local function over(pos, size, m)
         if not pos or not size then return false end
         m = m or mousePos()
         return m.X >= pos.X and m.Y >= pos.Y and m.X <= pos.X + size.X and m.Y <= pos.Y + size.Y
     end
-
     local function nestBorder(parentPos, parentSize, z)
         local b1 = draw("Square", {
             Size = Vector2.new(parentSize.X + 2, parentSize.Y + 2),
@@ -915,7 +844,6 @@ local TraceDraw = (function()
         })
         return b1, b2
     end
-
     function TD.Unload()
         waitingForKey = false
         pcall(function()
@@ -930,12 +858,10 @@ local TraceDraw = (function()
         TD.open = false
         TD._window = nil
     end
-
     function TD.SetOpen(bool)
         TD.open = bool == true
         if TD._setVisible then TD._setVisible(TD.open) end
     end
-
     function TD.syncFromSettings()
         local ui = Settings and Settings.UI or {}
         local accent = hexToColor3(ui.AccentHex or ui.ToggleHex or "6759B3")
@@ -963,7 +889,7 @@ local TraceDraw = (function()
             if o.title then o.title.Color = TD.theme.PrimaryText end
             if win.layoutTabs then win:layoutTabs() end
             if win.layoutSections then
-                -- refresh section chrome colors
+
                 for _, tab in ipairs(win.tabs or {}) do
                     for _, sec in ipairs(tab.sections or {}) do
                         if sec.bg then sec.bg.Color = TD.theme.SectionBg end
@@ -976,7 +902,6 @@ local TraceDraw = (function()
             end
         end
     end
-
     function TD.Notify(msg, dur)
         msg = tostring(msg or "")
         dur = tonumber(dur) or 2.5
@@ -1015,7 +940,6 @@ local TraceDraw = (function()
             destroyDrawing(t); destroyDrawing(bg); destroyDrawing(accent)
         end)
     end
-
     function TD.getOverlayGui()
         if TD._overlay and TD._overlay.Parent then return TD._overlay end
         local pg = player:FindFirstChildOfClass("PlayerGui")
@@ -1034,7 +958,6 @@ local TraceDraw = (function()
         TD._overlay = sg
         return sg
     end
-
     function TD.pickColor(opts)
         opts = opts or {}
         local host = TD.getOverlayGui()
@@ -1050,7 +973,7 @@ local TraceDraw = (function()
         local win = TD._window
         local vs = (cam and cam.ViewportSize) or Vector2.new(1920, 1080)
         local pickW, pickH = 152, 152
-        -- Park the ScreenGui picker beside the Drawing window so it is not covered
+
         local anchor
         if win and win.pos and win.size then
             anchor = Vector2.new(win.pos.X + win.size.X + 10, win.pos.Y + 40)
@@ -1081,7 +1004,6 @@ local TraceDraw = (function()
             end,
         })
     end
-
     function TD.NewWindow(opts)
         opts = opts or {}
         local rawTitle = opts.title or ("Melo " .. tostring(MW.display or ""))
@@ -1105,7 +1027,6 @@ local TraceDraw = (function()
             AddTab = function() end,
             SetVisible = function() end,
         }
-
         local function place()
             local p, s = win.pos, win.size
             win.objects.bg.Position = p
@@ -1165,7 +1086,6 @@ local TraceDraw = (function()
             win:layoutTabs()
             win:layoutSections()
         end
-
         win.objects.mid = draw("Square", { Color = TD.theme.Border2, Filled = true, Visible = true, ZIndex = z - 3 })
         win.objects.b2 = draw("Square", { Color = TD.theme.Border3, Filled = true, Visible = true, ZIndex = z - 5 })
         win.objects.b1 = draw("Square", { Color = TD.theme.Border1, Filled = true, Visible = true, ZIndex = z - 4 })
@@ -1203,7 +1123,6 @@ local TraceDraw = (function()
         win.objects.group = draw("Square", { Color = TD.theme.GroupBg, Filled = true, Visible = true, ZIndex = z + 5 })
         win.objects.col1 = draw("Square", { Color = TD.theme.Background, Filled = false, Transparency = 1, Visible = true, ZIndex = z + 6 })
         win.objects.col2 = draw("Square", { Color = TD.theme.Background, Filled = false, Transparency = 1, Visible = true, ZIndex = z + 6 })
-
         local dragging, dragStart, posStart = false, nil, nil
         conn(UIS.InputBegan, function(input, gpe)
             if gpe or not TD.open or not win.visible then return end
@@ -1226,7 +1145,6 @@ local TraceDraw = (function()
                 place()
             end
         end)
-
         function win:layoutTabs()
             local x = self.pos.X + 8
             local y = self.pos.Y + 8
@@ -1247,7 +1165,6 @@ local TraceDraw = (function()
                 x = x + w + 2
             end
         end
-
         function win:layoutSections()
             local colY = { 0, 0 }
             for _, tab in ipairs(self.tabs) do
@@ -1298,7 +1215,6 @@ local TraceDraw = (function()
                 end
             end
         end
-
         function win:AddTab(name)
             local tab = { name = name, sections = {}, bg = nil, label = nil, top = nil }
             tab.bg = draw("Square", { Color = TD.theme.Background, Filled = true, Visible = true, ZIndex = z + 7 })
@@ -1322,7 +1238,6 @@ local TraceDraw = (function()
             end)
             table.insert(self.tabs, tab)
             if not self.selected then self.selected = tab end
-
             function tab:AddSection(text, side)
                 local sec = {
                     text = text,
@@ -1338,12 +1253,10 @@ local TraceDraw = (function()
                     }),
                 }
                 table.insert(self.sections, sec)
-
                 local function addOpt(opt)
                     table.insert(sec.options, opt)
                     return opt
                 end
-
                 function sec:AddToggle(data)
                     data = data or {}
                     local state = data.default == true
@@ -1455,7 +1368,6 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 function sec:AddColor(data)
                     data = data or {}
                     local label = draw("Text", {
@@ -1508,7 +1420,6 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 function sec:AddSlider(data)
                     data = data or {}
                     local minv = data.min or 0
@@ -1575,7 +1486,6 @@ local TraceDraw = (function()
                     setValue(value, false)
                     return addOpt(opt)
                 end
-
                 function sec:AddButton(data)
                     data = data or {}
                     local bg = draw("Square", { Size = Vector2.new(100, 14), Color = TD.theme.OptionBg, Filled = true, Visible = true, ZIndex = z + 12 })
@@ -1610,7 +1520,6 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 function sec:AddText(data)
                     data = data or {}
                     local raw = tostring(data.text or "")
@@ -1641,7 +1550,6 @@ local TraceDraw = (function()
                         end,
                     })
                 end
-
                 function sec:AddSeparator(data)
                     data = data or {}
                     local line = draw("Square", { Size = Vector2.new(80, 1), Color = TD.theme.OptionBg, Filled = true, Visible = true, ZIndex = z + 12 })
@@ -1660,7 +1568,6 @@ local TraceDraw = (function()
                         end,
                     })
                 end
-
                 function sec:AddList(data)
                     data = data or {}
                     local values = data.values or {}
@@ -1706,7 +1613,6 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 function sec:AddInput(data)
                     data = data or {}
                     local text = tostring(data.default or "")
@@ -1865,7 +1771,6 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 function sec:AddKeybind(data)
                     data = data or {}
                     local capturing = false
@@ -1937,13 +1842,10 @@ local TraceDraw = (function()
                     end)
                     return addOpt(opt)
                 end
-
                 return sec
             end
-
             return tab
         end
-
         function win:SetVisible(v)
             self.visible = v and true or false
             local show = self.visible and TD.open
@@ -1953,13 +1855,11 @@ local TraceDraw = (function()
             self:layoutTabs()
             self:layoutSections()
         end
-
         place()
         TD._window = win
         TD._setVisible = function(v) win:SetVisible(v) end
         return win
     end
-
     function TD.mountCmdBar(MD)
         MD = MD or {}
         local z = 2200
@@ -1985,7 +1885,6 @@ local TraceDraw = (function()
                 desc = draw("Text", { Text = "", Size = 13, Font = 2, Color = Color3.fromRGB(160, 160, 170), Outline = false, Visible = false, ZIndex = z + 2 }),
             }
         end
-
         local function rejoin()
             TD.Notify("Rejoining", 2)
             pcall(function() S.TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end)
@@ -2048,7 +1947,6 @@ local TraceDraw = (function()
             { name = "unload", keys = { "unload", "exit" }, desc = "unload script", run = unload },
             { name = "help", keys = { "help" }, desc = "show every command", keep = true },
         }
-
         local function tokenOf(raw)
             return (tostring(raw or ""):lower():match("^%s*(%S+)")) or ""
         end
@@ -2263,7 +2161,6 @@ local TraceDraw = (function()
         end)
         TD._cmdRefresh = refresh
     end
-
     function TD.buildMenu(MD)
         if not hasDrawing() then
             TD.Notify("Drawing API missing: menu unavailable", 4)
@@ -2272,14 +2169,12 @@ local TraceDraw = (function()
         if TD.hasInit then TD.Unload() end
         TD.hasInit = true
         Settings.HUD.Watermark = false
-
         local win = TD.NewWindow({
             title = "Melo 🍃  ·  " .. tostring(MW.mode or "Universal") .. "  ·  pre alpha",
             size = Vector2.new(700, 760),
             position = Vector2.new(200, 70),
         })
 
-        -- HOME
         do
             local tab = win:AddTab("Home")
             local left = tab:AddSection("Session", 1)
@@ -2346,7 +2241,6 @@ local TraceDraw = (function()
             end
         end
 
-        -- MM2 (Rift kit)
         if MW.allows("mm2") then
             local tab = win:AddTab("MM2")
             local left = tab:AddSection("Roles / ESP", 1)
@@ -2386,7 +2280,6 @@ local TraceDraw = (function()
                     Settings.MM2.ShootKey = k
                 end,
             })
-
             local right = tab:AddSection("Combat / Farm", 2)
             right:AddToggle({ text = "Auto Farm Coins", default = Settings.MM2.AutoFarm == true, callback = function(e)
                 Settings.MM2.AutoFarm = e
@@ -2423,7 +2316,6 @@ local TraceDraw = (function()
                 Settings.MM2.AntiFling = e
             end })
         end
-
         if MW.allows("phantomforces") then
             local tab = win:AddTab("PF")
             local left = tab:AddSection("ESP / Aim", 1)
@@ -2484,7 +2376,6 @@ local TraceDraw = (function()
             left:AddToggle({ text = "Predict Velocity", default = Settings.PF.Predict ~= false, callback = function(e)
                 Settings.PF.Predict = e
             end })
-
             local right = tab:AddSection("Extras", 2)
             right:AddToggle({ text = "Soft No Recoil", default = Settings.PF.SoftNoRecoil == true, callback = function(e)
                 Settings.PF.SoftNoRecoil = e
@@ -2525,7 +2416,6 @@ local TraceDraw = (function()
             right:AddText({ text = "Ghosts = orange / Phantoms = blue" })
         end
 
-        -- PLAYERS
         do
             local tab = win:AddTab("Players")
             local names = {}
@@ -2589,7 +2479,6 @@ local TraceDraw = (function()
             end })
         end
 
-        -- AIM (Arsenal / MiscGunTest style only; PF/MM2 use their own tabs)
         if MW.allows("aim") and not MW.allows("phantomforces") and not MW.allows("mm2") then
             local tab = win:AddTab("Aim")
             local a1 = tab:AddSection("Aimbot", 1)
@@ -2604,7 +2493,6 @@ local TraceDraw = (function()
                 TD.Notify(MW.isPF and "Aim: Camera (PF silent is on PF tab)" or "Aim: Camera only (Silent locked)", 1.5)
             end })
             a1:AddText({ text = MW.isPF and "PF silent aim lives on the PF tab." or "Silent Aim is locked off (stability)." })
-
             a1:AddToggle({ text = "Sticky Aim", default = Settings.Aimbot.StickyAim, callback = function(e) Settings.Aimbot.StickyAim = e end })
             a1:AddToggle({ text = "Toggle Mode (RMB)", default = Settings.Aimbot.Toggle, callback = function(e) Settings.Aimbot.Toggle = e end })
             a1:AddToggle({ text = "Require LOS", default = Settings.Aimbot.RequireLOS, callback = function(e) Settings.Aimbot.RequireLOS = e end })
@@ -2635,7 +2523,6 @@ local TraceDraw = (function()
             a1:AddList({ text = "Lock Part", values = {"Head","HumanoidRootPart","UpperTorso","Torso"}, default = Settings.Aimbot.LockPart or "Head", callback = function(v)
                 Settings.Aimbot.LockPart = v
             end })
-
             local a2 = tab:AddSection("Combat / Guns", 2)
             a2:AddToggle({ text = "Trigger Bot", default = Settings.Combat.TriggerBot, callback = function(e)
                 Settings.Combat.TriggerBot = e
@@ -2703,8 +2590,6 @@ local TraceDraw = (function()
             end
         end
 
-
-        -- ESP (real Settings keys)
         do
             local tab = win:AddTab("ESP")
             local bump = function()
@@ -2774,7 +2659,6 @@ local TraceDraw = (function()
             e1:AddToggle({ text = "Visible Check", default = Settings.ESP.VisibleCheck, callback = function(e)
                 Settings.ESP.VisibleCheck = e; bump()
             end })
-
             local e2 = tab:AddSection("Style / Packs", 2)
             e2:AddToggle({ text = "Link ESP to Accent", default = Settings.ESP.LinkToAccent ~= false, callback = function(e)
                 Settings.ESP.LinkToAccent = e
@@ -2831,7 +2715,6 @@ local TraceDraw = (function()
             end
         end
 
-        -- WORLD
         do
             local tab = win:AddTab("World")
             local m1 = tab:AddSection("Movement", 1)
@@ -2892,7 +2775,6 @@ local TraceDraw = (function()
                     end })
                 end
             end
-
             local m2 = tab:AddSection("Visuals / Misc", 2)
             m2:AddToggle({ text = "Crosshair", default = Settings.Crosshair.Enabled, callback = function(e)
                 Settings.Crosshair.Enabled = e
@@ -2968,7 +2850,6 @@ local TraceDraw = (function()
             end
         end
 
-        -- AUDIO
         do
             local tab = win:AddTab("Audio")
             local a = tab:AddSection("Hit / Kill", 1)
@@ -3049,7 +2930,6 @@ local TraceDraw = (function()
             m:AddText({ text = "Boombox plays in 3D from your character, with distance falloff." })
         end
 
-        -- BINDS
         do
             local tab = win:AddTab("Binds")
             local b1 = tab:AddSection("Menu", 1)
@@ -3098,7 +2978,6 @@ local TraceDraw = (function()
             b2:AddText({ text = "Click a bind, then press a key. Esc = None." })
         end
 
-        -- CONFIG
         do
             local tab = win:AddTab("Config")
             local typedName = readAutoloadName()
@@ -3217,7 +3096,6 @@ local TraceDraw = (function()
                 pcall(function() S.TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player) end)
             end })
         end
-
         TD.syncFromSettings()
         table.insert(themeCallbacks, function()
             pcall(TD.syncFromSettings)
@@ -3229,12 +3107,9 @@ local TraceDraw = (function()
         TD.Notify("Melo 🍃 ready", 2)
         return win
     end
-
     return TD
 end)()
 UILib.TraceDraw = TraceDraw
-
-
 function UILib.buildMenuWindow(screenGui, windowLayer)
     local MD = UILib.MD
     local WIN_W, WIN_H   = 780, 560
@@ -3253,7 +3128,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     local CONTENT_TOP    = TOP_BAR_H + 8
     local CONTENT_H      = WIN_H - CONTENT_TOP - FOOTER_H - 6
 
-    -- Menu Z stack (Sibling): bg < content < footer < rail < top
     local Z = {
         bg = 1,
         content = 10,
@@ -3268,7 +3142,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         topUi = 41,
         accent = 42,
     }
-
     local mainFrame = UILib.newFrame(windowLayer,{
         Name=MW_T.mainFrame,Size=UDim2.new(0,WIN_W,0,WIN_H),
         Position=UDim2.new(0.5,-WIN_W/2,0.5,-WIN_H/2),
@@ -3287,7 +3160,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     table.insert(MD.themeCallbacks, function()
         menuScale.Scale = tonumber(Settings.UI and Settings.UI.MenuScale) or 1
     end)
-
     local menuBlur = nil
     pcall(function()
         if Settings.UI and Settings.UI.BlurMenu ~= false then
@@ -3302,7 +3174,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         if not menuBlur then return end
         UILib.tween(menuBlur, 0.22, {Size = on and 12 or 0}):Play()
     end
-
     local mainBg = UILib.newFrame(mainFrame, {
         Name = MW_T.mainBg,
         Size = UDim2.new(1, 0, 1, 0),
@@ -3315,19 +3186,16 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     table.insert(MD.themeCallbacks, function()
         mainBg.BackgroundColor3 = Theme.WindowBg
     end)
-
     local topAccent = UILib.newFrame(mainFrame,{Size=UDim2.new(1,0,0,1),Position=UDim2.new(0,0,0,0),BackgroundColor3=Theme.TextAccent,BackgroundTransparency=0.35,BorderSizePixel=0,ZIndex=Z.accent})
     table.insert(MD.themeCallbacks,function()
         topAccent.BackgroundColor3 = Theme.TextAccent
     end)
-
     mainFrame.BackgroundTransparency = 1
     mainFrame.Position = UDim2.new(0.5,-WIN_W/2,0.5,-WIN_H/2+16)
     task.spawn(function()
         task.wait(0.05)
         UILib.tween(mainFrame, 0.35, {BackgroundTransparency = 0, Position = UDim2.new(0.5,-WIN_W/2,0.5,-WIN_H/2)}, Enum.EasingStyle.Quint):Play()
     end)
-
     local dragging,dragStart,startPos2=false,nil,nil
     local topBar = UILib.newFrame(mainFrame, {
         Name = MW_T.topBar,
@@ -3342,7 +3210,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     end)
     UILib.newFrame(topBar, {Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = Theme.CardBorder, BackgroundTransparency = 0.2, BorderSizePixel = 0})
 
-    -- Fragment-style brand header (avatar/server kept hidden for streamer refs)
     local avatarRing = UILib.newFrame(topBar, {
         Size = UDim2.new(0, 1, 0, 1),
         Position = UDim2.new(0, 0, 0, 0),
@@ -3356,7 +3223,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     avatarImg.Visible = false
     avatarImg.Parent = avatarRing
     local onlineDot = UILib.newFrame(topBar, {Size = UDim2.new(0, 1, 0, 1), BackgroundTransparency = 1, Visible = false, ZIndex = 1})
-
     local logoMark = UILib.newFrame(topBar, {
         Size = UDim2.new(0, 16, 0, 16),
         Position = UDim2.new(0, 14, 0.5, -8),
@@ -3388,7 +3254,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     streamerUiRefs.playerNameLbl = playerNameLbl
     streamerUiRefs.premBadge = premBadge
     streamerUiRefs.refreshLogoTitle = refreshLogoTitle
-
     local serverPanel = UILib.newFrame(topBar, {
         Size = UDim2.new(0, 1, 0, 1),
         BackgroundTransparency = 1,
@@ -3402,7 +3267,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     local serverPlayersLbl = UILib.newLabel(serverPanel, {Size = UDim2.new(1, 0, 1, 0), Text = "", TextTransparency = 1, Visible = false})
     local serverJobLbl = UILib.newLabel(serverPanel, {Size = UDim2.new(1, 0, 1, 0), Text = "", TextTransparency = 1, Visible = false})
     table.insert(MD.themeCallbacks, function() end)
-
     local function updateServerInfo()
         local jobId = game.JobId
         local shortJob
@@ -3419,7 +3283,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     streamerUiRefs.updateServerInfo = updateServerInfo
     table.insert(allConnections, S.Players.PlayerAdded:Connect(updateServerInfo))
     table.insert(allConnections, S.Players.PlayerRemoving:Connect(updateServerInfo))
-
     local searchBox = UILib.newBox(topBar, {
         Name = MW_T.search,
         Size = UDim2.new(0, 128, 0, 26),
@@ -3447,7 +3310,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         searchBox.BackgroundColor3 = Theme.InputBg
         searchStroke.Color = Theme.InputBorder
     end)
-
     local minMenuBtn = UILib.newButton(topBar, {
         Size = UDim2.new(0, 26, 0, 26),
         Position = UDim2.new(1, -70, 0.5, -13),
@@ -3466,7 +3328,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         minMenuBtn.TextColor3 = Theme.TextSecondary
         minMenuStroke.Color = Theme.CardBorder
     end)
-
     local closeMenuBtn = UILib.newButton(topBar, {
         Size = UDim2.new(0, 26, 0, 26),
         Position = UDim2.new(1, -38, 0.5, -13),
@@ -3491,7 +3352,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             pcall(fn)
             return
         end
-        -- Fallback if cleanup never registered (load error mid-boot)
+
         isUnloading = true
         _G[MW_T.unloaded] = true
         pcall(function()
@@ -3502,7 +3363,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             if b then b:Destroy() end
         end)
     end
-
     local function applyMenuSearch(query)
         query = string.lower(tostring(query or "")):gsub("^%s+", ""):gsub("%s+$", "")
         local firstMatchPage = nil
@@ -3532,13 +3392,11 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             switchPage(firstMatchPage)
         end
     end
-
     searchBox:GetPropertyChangedSignal("Text"):Connect(function()
         applyMenuSearch(searchBox.Text)
     end)
     searchBox.Focused:Connect(function() UILib.tween(searchStroke, UILib.TFast, {Color = Theme.InputFocus or Theme.TextAccent, Transparency = 0}):Play() end)
     searchBox.FocusLost:Connect(function() UILib.tween(searchStroke, UILib.TFast, {Color = Theme.InputBorder, Transparency = 0.35}):Play() end)
-
     topBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true; dragStart = input.Position; startPos2 = mainFrame.Position
@@ -3551,7 +3409,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             mainFrame.Position = UDim2.new(startPos2.X.Scale, startPos2.X.Offset + d.X, startPos2.Y.Scale, startPos2.Y.Offset + d.Y)
         end
     end))
-
     local navStructure = {
         Home = {page = "Home", subs = {}},
         Combat = {page = "Aimbot", subs = {}},
@@ -3563,24 +3420,21 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     local tabPages = {}
     local tabBuilt = {}
     local tabBuilders = {}
-    local restoreFloatPanels -- filled when float panels are created
+    local restoreFloatPanels
     local activeMain = "Home"
     local activeTab = "Home"
     local homeSessionT0 = tick()
     local mainTabBtns = {}
     local subTabBtns = {}
-
     local SUB_TAB_META = {
         ESP = {icon = "eye", label = "ESP"},
-        Radar = {icon = "radar", label = "Radar"}, -- unused; Radar UI removed
+        Radar = {icon = "radar", label = "Radar"},
         General = {icon = "menu", label = "Player"},
         Audio = {icon = "volume", label = "Audio"},
         Settings = {icon = "settings", label = "Settings"},
         Report = {icon = "flag", label = "Report"},
     }
 
-
-    -- Hybrid left rail (Trace v2)
     local leftRail = UILib.newFrame(mainFrame, {
         Name = "TraceRail",
         Size = UDim2.new(0, RAIL_W, 1, -TOP_BAR_H - 4),
@@ -3596,7 +3450,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         leftRail.BackgroundColor3 = Theme.SidebarBg or Theme.WindowBg
         railStroke.Color = Theme.CardBorder
     end)
-    -- Absolute accent edge: must NOT be a UIListLayout child (it was eating full height)
+
     local railAccent = UILib.newFrame(leftRail, {
         Name = "RailAccent",
         Size = UDim2.new(0, 1, 1, 0),
@@ -3607,7 +3461,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         ZIndex = Z.railItem,
     })
     table.insert(MD.themeCallbacks, function() railAccent.BackgroundColor3 = Theme.TextAccent end)
-
     local railList = UILib.newFrame(leftRail, {
         Name = "RailList",
         Size = UDim2.new(1, -4, 1, -58),
@@ -3627,7 +3480,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     railPad.PaddingLeft = UDim.new(0, 4)
     railPad.PaddingRight = UDim.new(0, 4)
     railPad.Parent = railList
-
     local railWord = UILib.newLabel(railList, {
         Size = UDim2.new(0, RAIL_W - 12, 0, 2),
         Text = "",
@@ -3638,7 +3490,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         ZIndex = 1,
     })
     table.insert(MD.themeCallbacks, function() end)
-
     local mainTabRow = UILib.newFrame(mainFrame, {
         Name = MW_T.mainTabs,
         Size = UDim2.new(1, -CONTENT_PAD * 2, 0, MAIN_TAB_H),
@@ -3652,7 +3503,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     mainTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     mainTabLayout.Padding = UDim.new(0, 6)
     mainTabLayout.Parent = mainTabRow
-
     local subTabRow = UILib.newFrame(mainFrame, {
         Name = MW_T.subTabs,
         Size = UDim2.new(1, -CONTENT_PAD * 2, 0, SUB_TAB_H),
@@ -3666,7 +3516,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     subTabLayout.SortOrder = Enum.SortOrder.LayoutOrder
     subTabLayout.Padding = UDim.new(0, 5)
     subTabLayout.Parent = subTabRow
-
     local contentArea = UILib.newFrame(mainFrame, {
         Name = MW_T.content,
         Size = UDim2.new(1, -(RAIL_W + CONTENT_PAD * 2), 0, CONTENT_H),
@@ -3683,7 +3532,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         contentArea.BackgroundColor3 = Theme.ContentBg
         contentStroke.Color = Theme.CardBorder
     end)
-
     local footerBar = UILib.newFrame(mainFrame, {
         Name = MW_T.footer,
         Size = UDim2.new(1, -CONTENT_PAD * 2, 0, FOOTER_H),
@@ -3707,7 +3555,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         footerRight.TextColor3 = Theme.TextAccent
         footerLeft.TextColor3 = Theme.TextDim
     end)
-
     local function updateFooterStatus()
         if Settings.Misc.StreamerModePlus then
             footerLeft.Text = "welcome back, player"
@@ -3726,7 +3573,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             updateFooterStatus()
         end
     end)
-
     local function switchPage(name)
         if isUnloading or _G[MW_T.unloaded] then return end
         activeTab = name
@@ -3741,9 +3587,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             if ref.indicator then ref.indicator.Visible = on end
         end
     end
-
     local function updateContentLayout()
-        -- Hybrid rail shell: content always sits right of rail; top tabs stay hidden.
+
         mainTabRow.Visible = false
         subTabRow.Visible = false
         contentArea.Position = UDim2.new(0, RAIL_W + CONTENT_PAD, 0, CONTENT_TOP)
@@ -3755,9 +3600,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             leftRail.Position = UDim2.new(0, 0, 0, TOP_BAR_H)
         end
     end
-
     local function refreshSubTabs(mainName)
-        -- Hybrid rail: sub-tab row stays hidden; Audio/Config are rail destinations.
+
         for _, c in ipairs(subTabRow:GetChildren()) do
             if not c:IsA("UIListLayout") then c:Destroy() end
         end
@@ -3767,7 +3611,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         updateContentLayout()
         return
     end
-
     local function switchMain(mainName)
         if isUnloading or _G[MW_T.unloaded] then return end
         activeMain = mainName
@@ -3782,7 +3625,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         refreshSubTabs(mainName)
         switchPage(info.page)
     end
-
     local mainOrder = 0
     for mainName in pairs(navStructure) do end
     local mainTabOrder = {"Combat", "Visuals", "Player"}
@@ -3809,7 +3651,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         btn.MouseButton1Click:Connect(function() switchMain(mainName) end)
     end
 
-    -- Rail navigation: Aim only on Arsenal (combat kit)
     local RAIL_ITEMS = {
         {id = "Home", label = "Home", icon = "home", page = "Home"},
     }
@@ -3916,7 +3757,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             paintRail()
         end)
     end
-    -- Avatar dock at bottom of rail
+
     local railAvatarWrap = UILib.newFrame(leftRail, {
         Size = UDim2.new(0, 34, 0, 34),
         Position = UDim2.new(0.5, -17, 1, -44),
@@ -3945,7 +3786,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         _switchMainPaint(mainName)
         paintRail()
     end
-
     mainTabRow.Visible = false
     subTabRow.Visible = false
     local function updateRailLayout()
@@ -3973,7 +3813,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             if ref.icon and ref.icon.SetColor then ref.icon:SetColor(on and Theme.TextAccent or Theme.TextSecondary) end
         end
     end)
-
     local topNavDock, setMenuVisible, refreshTopNavDock = _G[MW_T.dockApi](
         windowLayer,
         mainFrame,
@@ -3997,18 +3836,14 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         _switchMainCore(mainName)
         if refreshTopNavDock then refreshTopNavDock() end
     end
-
     local function makeCard(parent, title, x, y, w, h_body)
         local wrapper = UILib.newFrame(parent,{Size=UDim2.new(0,w,0,CARD_HEADER_H+h_body),Position=UDim2.new(0,x,0,y),BackgroundColor3=Theme.CardBg,BorderSizePixel=0,ZIndex=10})
         local cardStroke = UILib.stroke(wrapper,Theme.CardBorder,1,0)
-
         local header = UILib.newFrame(wrapper,{Size=UDim2.new(1,0,0,CARD_HEADER_H),BackgroundColor3=Theme.CardHeaderBg,BorderSizePixel=0,ZIndex=11})
         UILib.newFrame(header,{Size=UDim2.new(1,0,0,1),Position=UDim2.new(0,0,1,-1),BackgroundColor3=Theme.DividerColor,BorderSizePixel=0,Name=MW_T.headerDiv,ZIndex=12})
         local titleLbl = UILib.newLabel(header,{Size=UDim2.new(1,-12,1,0),Position=UDim2.new(0,8,0,0),Text=title,TextColor3=Theme.TextAccent,TextSize=12,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=13})
-
         local body = UILib.newFrame(wrapper,{Name=MW_T.cardBody,Size=UDim2.new(1,0,0,h_body),Position=UDim2.new(0,0,0,CARD_HEADER_H),BackgroundTransparency=1,BorderSizePixel=0,ClipsDescendants=true,ZIndex=11})
         local bodyPad=Instance.new("UIPadding"); bodyPad.PaddingLeft=UDim.new(0,8); bodyPad.PaddingRight=UDim.new(0,8); bodyPad.PaddingTop=UDim.new(0,4); bodyPad.Parent=body
-
         table.insert(MD.themeCallbacks,function()
             wrapper.BackgroundColor3=Theme.CardBg
             cardStroke.Color = Theme.CardBorder
@@ -4143,20 +3978,17 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         end)
         if not ok then activeSlider=nil end
     end))
-
     local function addSliderRow(body, label, yOff, min, max, default, callback)
         local row = UILib.newFrame(body,{Size=UDim2.new(1,0,0,ROW_H+8),Position=UDim2.new(0,0,0,yOff),BackgroundTransparency=1,BorderSizePixel=0})
         UILib.newLabel(row,{Size=UDim2.new(0.62,0,0,14),Text=label,TextColor3=Theme.TextPrimary,TextSize=12,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left})
         local disp = (max <= 1) and string.format("%.2f", default) or tostring(default)
         local valLbl=UILib.newLabel(row,{Size=UDim2.new(0.38,0,0,14),Position=UDim2.new(0.62,0,0,0),Text=disp,TextColor3=Theme.TextAccent,TextSize=11,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Right})
-
         local track=UILib.newFrame(row,{Size=UDim2.new(1,0,0,6),Position=UDim2.new(0,0,0,18),BackgroundColor3=Theme.SliderTrack,BorderSizePixel=0})
         UILib.corner(track, 8)
         local fill=UILib.newFrame(track,{Size=UDim2.new((default-min)/math.max(max-min,0.0001),0,1,0),BackgroundColor3=Theme.SliderFill,BorderSizePixel=0})
         UILib.corner(fill, 8)
         local knob=UILib.newFrame(track,{Size=UDim2.fromOffset(12,12),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new((default-min)/math.max(max-min,0.0001),0,0.5,0),BackgroundColor3=Color3.fromRGB(245,245,245),BorderSizePixel=0,ZIndex=3})
         UILib.corner(knob, 12)
-
         UILib.newButton(row,{Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Text="",ZIndex=8},nil).MouseButton1Down:Connect(function()
             if isUnloading or _G[MW_T.unloaded] then return end
             activeSlider={track=track,fill=fill,knob=knob,valLbl=valLbl,min=min,max=max,callback=callback}
@@ -4274,22 +4106,19 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         btn.MouseLeave:Connect(function() UILib.tween(btn, UILib.TFast, {BackgroundTransparency = 0}):Play() end)
         return btn
     end
-
     local function addInfoRow(body, text, yOff, color)
         return UILib.newLabel(body,{Size=UDim2.new(1,0,0,16),Position=UDim2.new(0,0,0,yOff),Text=text,TextColor3=color or Theme.TextDim,TextSize=9,Font=Enum.Font.SourceSansItalic,TextXAlignment=Enum.TextXAlignment.Left,TextWrapped=true})
     end
-
     local function addInputRow(body, placeholder, yOff, default, callback)
         local box=UILib.newBox(body,{Size=UDim2.new(1,0,0,24),Position=UDim2.new(0,0,0,yOff),BackgroundColor3=Theme.InputBg,BorderSizePixel=0,Text=default or "",PlaceholderText=placeholder,PlaceholderColor3=Theme.TextDim,TextColor3=Theme.TextPrimary,TextSize=10,Font=Enum.Font.Gotham,TextXAlignment=Enum.TextXAlignment.Left,ClearTextOnFocus=false})
         UILib.corner(box,5)
         local boxStroke = UILib.stroke(box, Theme.InputBorder, 1, 0.3)
         local pad=Instance.new("UIPadding"); pad.PaddingLeft=UDim.new(0,8); pad.Parent=box
-        
+
         box.Focused:Connect(function() UILib.tween(boxStroke,UILib.TFast,{Color=Theme.InputFocus or Theme.CardHeaderBg, Transparency=0}):Play() end)
         box.FocusLost:Connect(function() UILib.tween(boxStroke,UILib.TFast,{Color=Theme.InputBorder, Transparency=0.3}):Play(); if callback and box.Text~="" then callback(box.Text) end end)
         return box
     end
-
     local function addDivider(body, yOff)
         local div = UILib.newFrame(body,{Size=UDim2.new(1,0,0,1),Position=UDim2.new(0,0,0,yOff),BackgroundColor3=Theme.DividerColor or Theme.CardBorder,BorderSizePixel=0})
         UILib.gradient(div, Theme.DividerColor or Theme.CardBorder, Color3.fromRGB(0,0,0), 0)
@@ -4303,19 +4132,15 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         pg.Visible=false; pg.ZIndex = Z.page; pg.Parent=contentArea
         return pg
     end
-
     local COL1_X = CONTENT_PAD
     local COL2_X = COL1_X + CARD_W + CONTENT_PAD
-
     local function col1Y(page) local n=page:FindFirstChild(MW_T.col1); if not n then n=Instance.new("NumberValue"); n.Name=MW_T.col1; n.Value=CONTENT_PAD + 4; n.Parent=page end; return n end
     local function col2Y(page) local n=page:FindFirstChild(MW_T.col2); if not n then n=Instance.new("NumberValue"); n.Name=MW_T.col2; n.Value=CONTENT_PAD + 4; n.Parent=page end; return n end
     local function pageMaxY(page) return math.max(col1Y(page).Value, col2Y(page).Value) + CONTENT_PAD end
-
     for _, name in ipairs({"Home", "General", "Aimbot", "ESP", "Audio", "Report", "Settings"}) do
         tabPages[name] = makePage(name)
         tabBuilt[name] = false
     end
-
     local function addCard(page, col, title, rows)
         if SINGLE_COLUMN then col = 1 end
         local h = 8
@@ -4335,7 +4160,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         local yVal = col==1 and col1Y(page) or col2Y(page)
         local body, wrapper = makeCard(page, title, x, yVal.Value, CARD_W, h)
         yVal.Value = yVal.Value + CARD_HEADER_H + h + CONTENT_PAD
-
         local ry = 0
         local rowById = {}
         local built = {}
@@ -4365,7 +4189,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 local btnColor = r[4]
                 local badge = nil
                 if typeof(btnColor) ~= "Color3" then
-                    -- Cap.badge(...) returns a lock string: not a Color3
+
                     if type(btnColor) == "string" then badge = btnColor end
                     btnColor = nil
                 end
@@ -4397,18 +4221,14 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         end
         local maxY = pageMaxY(page)
         page.CanvasSize = UDim2.new(0,0,0,maxY)
-
         local searchBlob = string.lower(title)
         for _, r in ipairs(rows) do
             if r[2] and type(r[2]) == "string" then searchBlob = searchBlob .. " " .. string.lower(r[2]) end
         end
         wrapper:SetAttribute("SearchBlob", searchBlob)
-
         return body, wrapper
     end
-
     local speedVel = nil
-
     tabBuilders["Home"] = function(page)
         local pad = 12
         local gap = 12
@@ -4416,9 +4236,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         local colGap = 12
         local leftW = math.floor((fullW - colGap) * 0.56)
         local rightW = fullW - colGap - leftW
-
         local function softGlow(parent, color)
-            -- Thin left accent instead of noisy glow blob
+
             local g = UILib.newFrame(parent, {
                 Size = UDim2.new(0, 3, 1, -16),
                 Position = UDim2.new(0, 6, 0, 8),
@@ -4430,7 +4249,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             UILib.corner(g, 2)
             return g
         end
-
         local function card(parent, title, subtitle, x, y, w, h, glow)
             local f = UILib.newFrame(parent, {
                 Size = UDim2.new(0, w, 0, h),
@@ -4474,7 +4292,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             end)
             return f
         end
-
         local function tile(parent, title, value, x, y, w, h)
             local f = UILib.newFrame(parent, {
                 Size = UDim2.new(0, w, 0, h),
@@ -4509,7 +4326,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             return v
         end
 
-        -- Hello
         local hello = UILib.newFrame(page, {
             Size = UDim2.new(0, fullW, 0, 76),
             Position = UDim2.new(0, pad, 0, pad),
@@ -4555,12 +4371,10 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             TextXAlignment = Enum.TextXAlignment.Left,
             ZIndex = Z.cardUi,
         })
-
         local modeY = pad + 76 + gap
         local modeSub = ((MW.kitSummary and MW.kitSummary()) or "")
             .. "\nExecutor: " .. tostring(getExecutorName())
         local modeCard = card(page, "Mode: " .. tostring(MW.mode or "?"), modeSub, pad, modeY, fullW, 78, Color3.fromRGB(125, 211, 252))
-
         local y = modeY + 78 + gap
         local headerH = 52
         local tw = math.floor((leftW - 36) / 2)
@@ -4588,7 +4402,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             joinTile.Text = ok and "Copied" or "Failed"
             MD.sendNotification("Join Script", ok and "Copied" or "Copy failed", 2)
         end)
-
         local execWeak = Cap.isWeak and Cap.isWeak()
         local execSub = execWeak and "Weak for Melo 🍃: some features locked."
             or (MW.isArsenal and "Looks supported for Melo 🍃."
@@ -4615,7 +4428,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             TextWrapped = true,
             ZIndex = Z.cardUi,
         })
-
         local friendsH = 148
         local friendsY = y + execH + gap
         local friends = card(page, "Friends", "Roblox friends overview", pad + leftW + colGap, friendsY, rightW, friendsH, Color3.fromRGB(220, 170, 70))
@@ -4625,7 +4437,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         local fOff = tile(friends, "Offline", "…", 20 + ftw, 52, ftw, fth)
         local fOn = tile(friends, "Online", "…", 12, 52 + fth + 8, ftw, fth)
         local fAll = tile(friends, "All", "…", 20 + ftw, 52 + fth + 8, ftw, fth)
-
         local bottomY = math.max(y + serverH, friendsY + friendsH) + gap
         local quickY = bottomY
         local quick = card(page, "Quick", "", pad, quickY, fullW, 70, nil)
@@ -4644,7 +4455,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         end)
         UILib.corner(unloadHomeBtn, 9)
         UILib.stroke(unloadHomeBtn, Theme.ErrorColor, 1, 0.45)
-
         local function fmtTime(sec)
             sec = math.max(0, math.floor(sec))
             return string.format("%02d:%02d:%02d", math.floor(sec / 3600), math.floor((sec % 3600) / 60), sec % 60)
@@ -4696,13 +4506,9 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 fAll.Text = tostring(total)
             end
         end)
-
         page.CanvasSize = UDim2.new(0, 0, 0, quickY + 70 + pad + 16)
     end
-
     tabBuilders["General"] = function(page)
-
-
         addCard(page,1,"World Recipes",{
             {"button","Noon",function() if MD.TracePack then MD.TracePack.applyWorldRecipe("Noon") end end},
             {"button","Dusk",function() if MD.TracePack then MD.TracePack.applyWorldRecipe("Dusk") end end},
@@ -4712,7 +4518,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             {"button","Arena Bright",function() if MD.TracePack then MD.TracePack.applyWorldRecipe("ArenaBright") end end},
             {"info","Lighting recipes for Visuals: safe client-side only.",Theme.TextDim},
         })
-
         addCard(page,1,"HUD Overlay",{
             {"toggle","Watermark",Settings.HUD.Watermark ~= false,function(e) Settings.HUD.Watermark=e end},
             {"enum","Watermark Pos",{"TopLeft","TopRight","BottomLeft"},Settings.HUD.WatermarkPos or "TopLeft",function(v) Settings.HUD.WatermarkPos=v end},
@@ -4944,9 +4749,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             {"info","Paste Discord webhook URL, focus out, then Add. Route toggles apply to all hooks.",Theme.TextDim},
         })
     end
-
     tabBuilders["Aimbot"] = function(page)
-        -- MM2 kit page (no Arsenal aim stack)
+
         if MW.allows("mm2") then
             addCard(page,1,"Murder Mystery 2",{
                 {"info","Role ESP, farm, sheriff tools. Other game kits hidden.",Theme.TextDim},
@@ -4983,7 +4787,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             page.CanvasSize=UDim2.new(0,0,0,pageMaxY(page))
             return
         end
-
         if not MW.allows("aim") then
             addCard(page,1,"Combat",{
                 {"info","Aim kit not enabled here. Mode: "..tostring(MW.mode),Theme.TextDim},
@@ -4992,7 +4795,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             return
         end
 
-        -- PF kit page (no Arsenal gun profiles / rage packs)
         if MW.allows("phantomforces") then
             addCard(page,1,"Phantom Forces",{
                 {"info","Ghosts orange / Phantoms blue. Only PF settings on this kit.",Theme.TextDim},
@@ -5050,7 +4852,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             page.CanvasSize=UDim2.new(0,0,0,pageMaxY(page))
             return
         end
-
         if MW.guard("hitbox") then
             addCard(page,1,"Game AC",{
                 {"info","MiscGunTest: Hitbox expand locked. Gun mods IN TESTING. Fly/speed on. TP/noclip blocked.",Theme.TextDim},
@@ -5131,9 +4932,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         })
         end
     end
-
     tabBuilders["ESP"] = function(page)
-
         addCard(page,2,"ESP Colors",{
             {"toggle","Link ESP to Accent",Settings.ESP.LinkToAccent ~= false,function(e) Settings.ESP.LinkToAccent=e; if applyEspPalette then applyEspPalette() end; if applyCustomTheme then applyCustomTheme() end end},
             {"button","Open Color Table",function() if UILib.openColorTable then UILib.openColorTable(true) end end},
@@ -5201,7 +5000,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             local d = Settings.ESP.ThrowableMaxDistance or 250
             if d <= 160 then return "Near" elseif d <= 320 then return "Mid" else return "Far" end
         end
-
         addCard(page,1,"ESP",{
                 {"toggle","Enabled",Settings.ESP.Enabled,function(e) Settings.ESP.Enabled=e; bumpESPDraw(); if not e then MD.clearAllESP() end; MD.sendNotification("ESP",e and "On" or "Off",2) end,nil,function() return Settings.ESP.Enabled end},
                 {"toggle","Self ESP",Settings.ESP.SelfESP,function(e) Settings.ESP.SelfESP=e; bumpESPDraw() end,nil,function() return Settings.ESP.SelfESP end},
@@ -5222,23 +5020,19 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                     if e then ensureESPMaster() else bumpESPDraw() end
                 end,nil,function() return Settings.ESP.TracerEnabled end},
                 {"enum","Tracer Origin",{"Top","Mouse","Center","Bottom"},Settings.ESP.TracerOrigin or "Bottom",function(v) Settings.ESP.TracerOrigin=v; bumpESPDraw() end,function() return Settings.ESP.TracerOrigin or "Bottom" end},
-
                 {"toggle","Skeleton",Settings.ESP.SkeletonEnabled,function(e)
                     Settings.ESP.SkeletonEnabled=e
                     if e then ensureESPMaster() else bumpESPDraw() end
                 end,nil,function() return Settings.ESP.SkeletonEnabled end},
-
                 {"toggle","Head Dot",Settings.ESP.HeadDotEnabled,function(e)
                     Settings.ESP.HeadDotEnabled=e
                     if e then ensureESPMaster() else bumpESPDraw() end
                 end,nil,function() return Settings.ESP.HeadDotEnabled end},
-
                 {"toggle","Offscreen Arrows",Settings.ESP.OffscreenArrows,function(e)
                     Settings.ESP.OffscreenArrows=e
                     if e then ensureESPMaster() else bumpESPDraw() end
                 end,nil,function() return Settings.ESP.OffscreenArrows end},
                 {"enum","Arrow Range",{"Near","Mid","Far"},getArrowRange(),function(v) setArrowRange(v) end,function() return getArrowRange() end},
-
                 {"toggle","Throwable ESP",Settings.ESP.ThrowableEnabled,function(e)
                     Settings.ESP.ThrowableEnabled=e
                     bumpESPDraw()
@@ -5246,7 +5040,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                     MD.sendNotification("Throwable ESP",e and "On" or "Off",2)
                 end,nil,function() return Settings.ESP.ThrowableEnabled end},
                 {"enum","Throw Range",{"Near","Mid","Far"},getThrowRange(),function(v) setThrowRange(v) end,function() return getThrowRange() end},
-
                 {"toggle","Throw Arc Preview",Settings.ESP.ThrowableArcPreview,function(e)
                     Settings.ESP.ThrowableArcPreview=e
                     bumpESPDraw()
@@ -5257,13 +5050,10 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             })
     end
 
-    -- Crosshair tab removed.
-
     tabBuilders["Radar"] = function(page)
-        -- Radar UI removed; overlay stays soft-locked off in code.
+
     end
 
-    -- Chat Spy on-screen panel
     local chatSpyGui = Instance.new("Frame")
     chatSpyGui.Name = MW_T.next(8)
     chatSpyGui.Size = UDim2.new(0, 280, 0, 160)
@@ -5337,7 +5127,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     end
     refreshChatSpyVisible()
     _G[MW_T.chatSpyApi] = { refresh = refreshChatSpyVisible }
-
     tabBuilders["Report"] = function(page)
         addCard(page,1,"Chat Spy",{
             {"toggle","Enable Chat Spy",Settings.Misc.ChatSpyEnabled,function(e)
@@ -5354,10 +5143,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         })
         page.CanvasSize=UDim2.new(0,0,0,pageMaxY(page))
     end
-
     tabBuilders["Audio"] = function(page)
         ensureUISettings()
-
         if MW.allows("hitKillAudio") then
         addCard(page,1,"Sound Presets",{
             {"button","Hit: Classic",function() if TraceExpand then TraceExpand.applyHitSoundPreset("ClassicHit") end end},
@@ -5398,7 +5185,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         })
         page.CanvasSize=UDim2.new(0,0,0,pageMaxY(page))
     end
-
     local currentToggleKey=Settings.Keybinds.ToggleGUI
     tabBuilders["Settings"] = function(page)
         ensureUISettings()
@@ -5436,7 +5222,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             {"info","Copies loadstrings to clipboard: paste in your executor yourself.",Theme.TextDim},
             {"info", Cap.ok("http") and "Loads remote scripts via HttpGet." or "HTTP locked by WEAO/UNC for this executor.", Theme.TextDim},
         })
-
         addCard(page,2,"Theme Studio",{
             {"enum","Preset",{"Purple","Informant","Ice","Graphite","BloodAmber","Mint","Steel","Crimson"},Settings.UI.ThemePreset or "Purple",function(v) if MD.applyThemePreset then MD.applyThemePreset(v) end; MD.sendNotification("Theme",v,1.5) end},
             {"enum","Menu Scale",{"Compact","Normal","Large"},"Normal",function(v) if MD.applyMenuScalePreset then MD.applyMenuScalePreset(v) end end},
@@ -5469,7 +5254,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             {"info", MW.isArsenal and "Combat + gun mods available on this place." or ("Showing "..tostring(MW.mode).." kit only: combat / gun mods stay Arsenal-only."), Theme.TextDim},
             {"info", (MD.LockAssert and MD.LockAssert.summary()) or "Cap gunmods status unknown", Theme.TextSecondary},
         })
-
         addCard(page,1,"Panels",{
             {"info","Use x on a float header to close that panel only.",Theme.TextDim},
             {"info","Theme colors live under Settings. ESP Preview / top header removed.",Theme.TextDim},
@@ -5478,7 +5262,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 else MD.sendNotification("Panels","Not ready",1.5) end
             end},
         })
-
         local themeY = col1Y(page).Value
         local themeBody = select(1, makeCard(page, "Theme Colors", COL1_X, themeY, CARD_W, 228))
         col1Y(page).Value = themeY + CARD_HEADER_H + 232 + CONTENT_PAD
@@ -5501,7 +5284,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             UILib.corner(sw, 5)
             UILib.stroke(sw, Theme.CardBorder, 1, 0.4)
         end
-
         local hexFields = {}
         local function addHexField(label, y, settingKey)
             UILib.newLabel(themeBody, {
@@ -5552,7 +5334,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             hexFields[settingKey] = {box = box, prev = prev, commit = commitHex}
             themeHexFields[settingKey] = hexFields[settingKey]
         end
-
         addHexField("Accent", 52, "AccentHex")
         addHexField("Background", 80, "BackgroundHex")
         addHexField("Surface / Cards", 108, "SurfaceHex")
@@ -5568,7 +5349,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             refreshThemeHexFields()
             sendNotification("Theme", "Reset to default", 2)
         end, Theme.EnumBg)
-
         addCard(page,2,"Script Info",{
             {"info","Melo 🍃 "..MW.display,Theme.TextAccent},
             {"info", tostring(MW.mode)..": PlaceId "..tostring(game.PlaceId)..(MW.isArsenal and "" or " (gun mods Arsenal-only)"), Theme.TextDim},
@@ -5582,7 +5362,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         })
         page.CanvasSize=UDim2.new(0,0,0,pageMaxY(page))
     end
-
     subTabRow.Visible = false
     updateContentLayout()
     switchMain("Home")
@@ -5652,10 +5431,8 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         if method=="CFrame" then if speedVel then pcall(function() speedVel:Destroy() end); speedVel=nil end; hum.WalkSpeed=16; local wm=md*spd*dt; hrp.CFrame=hrp.CFrame+Vector3.new(wm.X,0,wm.Z)
         elseif method=="Velocity" then hum.WalkSpeed=16; if not speedVel or speedVel.Parent~=hrp then if speedVel then pcall(function() speedVel:Destroy() end) end; speedVel=Instance.new("BodyVelocity"); speedVel.Name=MW_T.spdVel; speedVel.MaxForce=Vector3.new(100000,0,100000); speedVel.P=10000; speedVel.Parent=hrp end; speedVel.Velocity=md*spd end
     end))
-
     local bhopVel=nil; local lastJump=0; local curBhop=0
 
-    -- Top header removed. Keep a silent HB stub so float-panel wiring still works.
     local HB = {
         panels = {},
         panelOpen = {},
@@ -5666,12 +5443,11 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         frame = { Visible = false },
         refresh = function() end,
     }
-    
+
     local fpsFrame=UILib.newFrame(screenGui,{Name=MW_T.fpsHud,Size=UDim2.new(0,110,0,24),Position=UDim2.new(1,-118,0,10),BackgroundColor3=Theme.CardBg,BackgroundTransparency=0.15,BorderSizePixel=0,Visible=false}); UILib.corner(fpsFrame,6); UILib.stroke(fpsFrame,Theme.CardBorder,1,0.5)
     local fpsLbl=UILib.newLabel(fpsFrame,{Size=UDim2.new(1,-10,1,0),Position=UDim2.new(0,6,0,0),Text="FPS: 0",TextColor3=Theme.TextAccent,TextSize=11,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left})
     local velLbl=UILib.newLabel(screenGui,{Name=MW_T.velHud,Size=UDim2.new(0,160,0,18),Position=UDim2.new(0.5,40,0.5,26),Text="0.0 studs/s",TextColor3=Theme.CardHeaderBg,TextSize=12,Font=Enum.Font.GothamBold,TextStrokeTransparency=0.5,TextStrokeColor3=Color3.fromRGB(0,0,0),Visible=false})
     local lastFpsTick=math.floor(tick()); local fc=0; local cfps=0
-
     table.insert(allConnections,S.RunService.RenderStepped:Connect(function(dt)
         if isUnloading or _G[MW_T.unloaded] then return end
         if Settings.Visuals.CustomFOV and not MD.isPlayerScoped() then
@@ -5717,11 +5493,9 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         if Settings.Visuals.ShowVelocity then local c=player.Character; if c then local hrp=c:FindFirstChild("HumanoidRootPart"); if hrp then local v=hrp.AssemblyLinearVelocity; velLbl.Text=string.format("%.1f studs/s",Vector3.new(v.X,0,v.Z).Magnitude) end end end
     end))
 
-    
     local vu=game:GetService("VirtualUser")
     table.insert(allConnections,player.Idled:Connect(function() if Settings.Misc.AntiAFK then vu:CaptureController(); vu:ClickButton2(Vector2.new()) end end))
 
-    
     local lastGunCheck=0; local lastSpam=0; local lastInfiniteAmmo=0
     table.insert(allConnections,S.RunService.Heartbeat:Connect(function()
         if isUnloading or _G[MW_T.unloaded] then return end
@@ -5744,14 +5518,13 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         end
     end))
 
-  
     pcall(function()
         local tcs=game:GetService("TextChatService"); if tcs then
             local function hook(ch) if ch:IsA("TextChannel") then ch.MessageReceived:Connect(function(mo) if not Settings.Misc.ChatSpyEnabled then return end; local src=mo.TextSource; if not src then return end; local sp=S.Players:GetPlayerByUserId(src.UserId); if not sp then return end; pushChatSpyLine(MD.getDisplayName(sp), mo.Text) end) end end
             for _,c in ipairs(tcs:GetDescendants()) do hook(c) end; tcs.DescendantAdded:Connect(hook)
         end
     end)
-    -- Arsenal custom chat spy: listen on Events.PlayerChatted (and siblings)
+
     pcall(function()
         local rem = select(1, MD.FX.resolveChatRemote())
         if not rem or not rem:IsA("RemoteEvent") then return end
@@ -5814,7 +5587,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             return
         end
     end))
-
     table.insert(allConnections,S.UserInputService.InputBegan:Connect(function(input,gp)
         if isUnloading or _G[MW_T.unloaded] then return end
         if waitingForKey then return end
@@ -5908,14 +5680,12 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             end
         end
     end))
-
     table.insert(allConnections,S.UserInputService.InputEnded:Connect(function(input)
         if isUnloading or _G[MW_T.unloaded] then return end
         if MD.inputMatchesBind(input, MD.AIMBOT_HOLD_BIND) then
             if MW.allows("aim") and Settings.Aimbot.Enabled and not Settings.Aimbot.Toggle then MD.stopAimbotTracking() end
         end
     end))
-
     setupAutoRejoin()
     _G[MW_T.audioApi].setup()
     table.insert(allConnections, player.CharacterAdded:Connect(function(char)
@@ -5932,7 +5702,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
         end))
     end))
 
-    -- Floating panels matching fragment layout
     local floatWins = {}
     local floatClosed = {}
     restoreFloatPanels = function()
@@ -6006,7 +5775,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 BorderSizePixel = 0,
                 ZIndex = 82,
             })
-
             local body = UILib.newFrame(win, {
                 Size = UDim2.new(1, -12, 1, -34),
                 Position = UDim2.new(0, 6, 0, 28),
@@ -6016,11 +5784,10 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 ClipsDescendants = false,
                 Active = true,
             })
-
             local drag, d0, p0 = false, nil, nil
             bar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    -- Don't start drag from the close button
+
                     local ap, asz = closeBtn.AbsolutePosition, closeBtn.AbsoluteSize
                     local m = input.Position
                     if m.X >= ap.X and m.Y >= ap.Y and m.X <= ap.X + asz.X and m.Y <= ap.Y + asz.Y then
@@ -6038,7 +5805,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                     win.Position = UDim2.new(p0.X.Scale, p0.X.Offset + d.X, p0.Y.Scale, p0.Y.Offset + d.Y)
                 end
             end))
-
             table.insert(MD.themeCallbacks, function()
                 win.BackgroundColor3 = Theme.WindowBg
                 bar.BackgroundColor3 = Theme.WindowBg
@@ -6056,7 +5822,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             HB.refresh()
             return win, body
         end
-
         local function flatBtn(parent, text, xScale, xOff, wScale, cb)
             local b = UILib.newButton(parent, {
                 Size = UDim2.new(wScale, -2, 0, 24),
@@ -6080,7 +5845,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             return b
         end
 
-        -- Configs
         do
             local _, body = makeFloat("Configs", 210, 300, UDim2.new(0.5, WIN_W/2 + 14, 0.5, -WIN_H/2))
             local list = Instance.new("ScrollingFrame")
@@ -6096,7 +5860,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             local layout = Instance.new("UIListLayout")
             layout.Padding = UDim.new(0, 0)
             layout.Parent = list
-
             local selected = currentProfileName or "Default"
             local function refreshList()
                 for _, c in ipairs(list:GetChildren()) do
@@ -6124,7 +5887,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 list.CanvasSize = UDim2.new(0, 0, 0, #profiles * 22)
             end
             refreshList()
-
             local btnRow = UILib.newFrame(body, {
                 Size = UDim2.new(1, 0, 0, 28),
                 Position = UDim2.new(0, 0, 1, -28),
@@ -6152,9 +5914,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             end)
         end
 
-        -- Appearance float panel removed (theme lives in Settings)
-
-        -- Player List
         do
             local _, body = makeFloat("Player List", 240, 280, UDim2.new(0.5, -WIN_W/2 - 254, 0.5, -WIN_H/2 + 40))
             local search = UILib.newBox(body, {
@@ -6171,7 +5930,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             searchPad.PaddingLeft = UDim.new(0, 8)
             searchPad.Parent = search
             UILib.stroke(search, Theme.CardBorder, 1, 0.35)
-
             local list = Instance.new("ScrollingFrame")
             list.Size = UDim2.new(1, 0, 1, -60)
             list.Position = UDim2.new(0, 0, 0, 28)
@@ -6184,7 +5942,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             UILib.stroke(list, Theme.CardBorder, 1, 0)
             local layout = Instance.new("UIListLayout")
             layout.Parent = list
-
             local selectedPlr = nil
             local empty = UILib.newLabel(list, {
                 Size = UDim2.new(1, 0, 0, 40),
@@ -6194,7 +5951,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 Font = Enum.Font.Gotham,
                 ZIndex = 33,
             })
-
             local function refreshPlayers(filter)
                 for _, c in ipairs(list:GetChildren()) do
                     if c:IsA("TextButton") then c:Destroy() end
@@ -6235,7 +5991,6 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                 if selectedPlr and not selectedPlr.Parent then selectedPlr = nil end
                 refreshPlayers(search.Text)
             end))
-
             local actions = UILib.newFrame(body, {
                 Size = UDim2.new(1, 0, 0, 26),
                 Position = UDim2.new(0, 0, 1, -26),
@@ -6266,9 +6021,7 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
             end)
         end
 
-        -- ESP Preview removed
     end)()
-
     local _setVis = setMenuVisible
     local menuAnimToken = 0
     local floatTweens = {}
@@ -6321,14 +6074,13 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
                     if token ~= menuAnimToken then return end
                     sc.Scale = 1
                     w.BackgroundTransparency = 0
-                    -- Panels re-opened from the header bar stay up after the hub collapses.
+
                     if HB.panelOpen[w] then return end
                     w.Visible = false
                 end)
             end
         end
     end
-
     HB.isPanelOpen = function(win)
         if HB.panelOpen[win] then return true end
         return HB.hubOpen and not floatClosed[win]
@@ -6363,21 +6115,16 @@ function UILib.buildMenuWindow(screenGui, windowLayer)
     HB.closeAll = function()
         setMenuVisible(false)
     end
-
     closeMenuBtn.MouseButton1Click:Connect(function()
         setMenuVisible(false)
     end)
     minMenuBtn.MouseButton1Click:Connect(function()
         setMenuVisible(false)
     end)
-
     MD.setMenuVisible = setMenuVisible
     MD.mainFrame = mainFrame
 end
-
-
 (function()
--- Nested for Luau register limit
 UILib.Kit = (function()
     local Kit = {}
     Kit.version = 2
@@ -6490,7 +6237,7 @@ UILib.Kit = (function()
         if sc then sc.Scale = math.max(0.9, targetScale * 0.96) end
         mainFrame.BackgroundTransparency = 0
         if rail then
-            -- Keep rail fully on-screen (do not park it at X=-20)
+
             rail.Position = UDim2.new(0, 0, 0, rail.Position.Y.Offset)
             rail.Visible = true
         end
@@ -6502,7 +6249,6 @@ UILib.Kit = (function()
     end
     return Kit
 end)()
-
 THEME_PRESETS = {
     Purple = {
         AccentHex = "6759B3",
@@ -6657,14 +6403,12 @@ THEME_PRESETS = {
         Role11 = "F87171",
     },
 }
-
 listThemePresets = function()
     local names = {}
     for k in pairs(THEME_PRESETS) do table.insert(names, k) end
     table.sort(names)
     return names
 end
-
 applyThemePreset = function(name)
     local p = THEME_PRESETS[name]
     if not p then return false end
@@ -6675,7 +6419,7 @@ applyThemePreset = function(name)
     Settings.UI.SurfaceHex = p.SurfaceHex
     Settings.UI.ToggleHex = p.ToggleHex
     Settings.ESP = Settings.ESP or {}
-    -- Preset keeps ESP linked to accent unless user customized
+
     if Settings.ESP.LinkToAccent ~= false then
         Settings.ESP.CloseHex = p.AccentHex
         Settings.ESP.MediumHex = p.ToggleHex or p.AccentHex
@@ -6693,7 +6437,6 @@ applyThemePreset = function(name)
     end)
     return true
 end
-
 local function preview_Ice(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6714,7 +6457,6 @@ local function preview_Ice(parent, x, y)
     s.Parent = f
     return f
 end
-
 local function preview_Graphite(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6735,7 +6477,6 @@ local function preview_Graphite(parent, x, y)
     s.Parent = f
     return f
 end
-
 local function preview_BloodAmber(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6756,7 +6497,6 @@ local function preview_BloodAmber(parent, x, y)
     s.Parent = f
     return f
 end
-
 local function preview_Mint(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6777,7 +6517,6 @@ local function preview_Mint(parent, x, y)
     s.Parent = f
     return f
 end
-
 local function preview_Steel(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6798,7 +6537,6 @@ local function preview_Steel(parent, x, y)
     s.Parent = f
     return f
 end
-
 local function preview_Crimson(parent, x, y)
     local f = Instance.new('Frame')
     f.Size = UDim2.fromOffset(48, 28)
@@ -6819,7 +6557,6 @@ local function preview_Crimson(parent, x, y)
     s.Parent = f
     return f
 end
-
 GUN_PROFILES = {
     Custom = false,
     LegitLite = {FastReload=false,FastFireRate=false,AlwaysAuto=false,NoSpread=false,NoRecoil=false,InfiniteAmmo=false},
@@ -6830,11 +6567,9 @@ GUN_PROFILES = {
     SlotA = {FastReload=true,FastFireRate=false,AlwaysAuto=true,NoSpread=false,NoRecoil=false,InfiniteAmmo=false},
     SlotB = {FastReload=true,FastFireRate=true,AlwaysAuto=false,NoSpread=true,NoRecoil=true,InfiniteAmmo=false},
 }
-
 listGunProfiles = function()
     return {'Custom','LegitLite','SemiComp','RagePack','Arena','Scout','SlotA','SlotB'}
 end
-
 applyGunProfile = function(name)
     if not Cap.ok('gunmods') then return false, 'locked' end
     Settings.Combat.GunProfile = name
@@ -6846,7 +6581,6 @@ applyGunProfile = function(name)
     if Settings.Combat.InfiniteAmmo and applyInfiniteAmmo then applyInfiniteAmmo() end
     return true
 end
-
 captureGunSlotA = function()
     local snap = {
         FastReload = Settings.Combat.FastReload and true or false,
@@ -6860,7 +6594,6 @@ captureGunSlotA = function()
     Settings.Combat.GunProfile = 'SlotA'
     return true
 end
-
 captureGunSlotB = function()
     local snap = {
         FastReload = Settings.Combat.FastReload and true or false,
@@ -6874,7 +6607,6 @@ captureGunSlotB = function()
     Settings.Combat.GunProfile = 'SlotB'
     return true
 end
-
 captureGunSlotC = function()
     local snap = {
         FastReload = Settings.Combat.FastReload and true or false,
@@ -6888,7 +6620,6 @@ captureGunSlotC = function()
     Settings.Combat.GunProfile = 'SlotC'
     return true
 end
-
 captureGunSlotD = function()
     local snap = {
         FastReload = Settings.Combat.FastReload and true or false,
@@ -6902,7 +6633,6 @@ captureGunSlotD = function()
     Settings.Combat.GunProfile = 'SlotD'
     return true
 end
-
 TraceHUD = (function()
     local HUD = {entries={}, feed={}, specs={}, binds={}, fps=0, ping=0, last=0}
     local root, watermark, bindList, specList, hitFeed, statsLbl
@@ -6920,7 +6650,7 @@ TraceHUD = (function()
     function HUD.mount(screenGui)
         if root and root.Parent then return root end
         root = UILib.newFrame(screenGui, {Name='TraceHUD', Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, ZIndex=35})
-        -- Compact single-line watermark (not letter-slam art)
+
         watermark = UILib.Kit.hudChrome(root, 'Watermark', 420, 26, posFor(Settings.HUD and Settings.HUD.WatermarkPos or 'TopLeft'))
         local wmLbl = UILib.newLabel(watermark, {Size=UDim2.new(1,-12,1,0), Position=UDim2.new(0,10,0,0), Text='Melo 🍃', TextColor3=Theme.TextAccent, TextSize=11, Font=Enum.Font.GothamBold, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=41})
         HUD._wmLbl = wmLbl
@@ -6941,7 +6671,7 @@ TraceHUD = (function()
         HUD._specAccent = specAccent
         UILib.newLabel(specList, {Size=UDim2.new(1,-18,0,16), Position=UDim2.new(0,12,0,5), Text='NEARBY', TextColor3=Theme.TextAccent, TextSize=11, Font=Enum.Font.GothamBold, TextXAlignment=Enum.TextXAlignment.Left, ZIndex=41})
         HUD._specBody = UILib.newLabel(specList, {Size=UDim2.new(1,-18,1,-28), Position=UDim2.new(0,12,0,24), Text='', TextColor3=Theme.TextSecondary, TextSize=12, Font=Enum.Font.GothamMedium, TextXAlignment=Enum.TextXAlignment.Left, TextYAlignment=Enum.TextYAlignment.Top, TextStrokeTransparency=0.55, ZIndex=41})
-        hitFeed = nil -- feed box removed
+        hitFeed = nil
         HUD._feedBody = nil
         statsLbl = nil
         table.insert(themeCallbacks, function()
@@ -6951,7 +6681,7 @@ TraceHUD = (function()
         return root
     end
     function HUD.pushFeed(kind, name, detail)
-        -- no on-screen feed panel; keep a tiny ring buffer for optional future use
+
         table.insert(HUD.feed, 1, string.format('[%s] %s', tostring(kind), tostring(name or '?')))
         while #HUD.feed > 6 do table.remove(HUD.feed) end
     end
@@ -7024,7 +6754,7 @@ TraceHUD = (function()
             local ok, ping = pcall(function() return math.floor(player:GetNetworkPing()*1000) end)
             if ok then HUD.ping = ping end
         end)
-        local showWm = false -- watermark removed
+        local showWm = false
         if watermark then watermark.Visible = false end
         if showWm and HUD._wmLbl then
             local bits = {'Melo 🍃', 'v'..tostring(MW.version)}
@@ -7060,14 +6790,13 @@ TraceHUD = (function()
     end
     return HUD
 end)()
-
 TraceConfig = (function()
     local C = {}
     function C.exportJSON(name)
         if not Cap.ok('filesystem') and not Cap.ok('clipboard') then return nil, 'locked' end
         local ok, data = pcall(function()
             if listProfiles and loadProfile then
-                -- snapshot current Settings via existing save path
+
                 return game:GetService('HttpService'):JSONEncode({
                     name = name or 'export',
                     version = MW.version,
@@ -7120,7 +6849,6 @@ TraceConfig = (function()
     end
     return C
 end)()
-
 TraceInfo = (function()
     local I = {}
     function I.modeLabel()
@@ -7144,7 +6872,6 @@ TraceInfo = (function()
     end
     return I
 end)()
-
 TraceCombatEx = (function()
     local X = {}
     X.priorities = {'Closest','LowestHP','Crosshair','Threat'}
@@ -7181,12 +6908,10 @@ TraceCombatEx = (function()
     end
     return X
 end)()
-
 TraceLoaderRailSilhouette = function(parent, accent)
-    -- Disabled: leftover rail preview was sticking on-screen after load.
+
     return nil
 end
-
 TRACE_HUD_LAYOUTS = {
     Compact = { WatermarkPos='TopLeft', KeybindPos='Right', SpectatorPos='TopRight' },
     Streamer = { WatermarkPos='BottomLeft', KeybindPos='Left', SpectatorPos='TopRight' },
@@ -7202,7 +6927,6 @@ applyHudLayout = function(name)
     for k,v in pairs(L) do Settings.HUD[k]=v end
     return true
 end
-
 STICKY_PROFILES = {
     Glue = { StickyAim=true, Multipoint=true, MultipointWeight=0.75 },
     Soft = { StickyAim=true, Multipoint=false, MultipointWeight=0.4 },
@@ -7216,7 +6940,6 @@ applyStickyProfile = function(name)
     for k,v in pairs(p) do Settings.Aimbot[k]=v end
     return true
 end
-
 MENU_SCALES = { Compact = 0.85, Normal = 1.0, Large = 1.15 }
 applyMenuScalePreset = function(name)
     local s = MENU_SCALES[name]
@@ -7225,7 +6948,6 @@ applyMenuScalePreset = function(name)
     if guiMainFrame and UILib.Kit then UILib.Kit.scaleMenu(guiMainFrame, s) end
     return true
 end
-
 local THEME_ROLE_KEYS = {
     "Accent",
     "Background",
@@ -7240,7 +6962,6 @@ local THEME_ROLE_KEYS = {
     "Rail",
     "Text",
 }
-
 local themeRoleSwatch = {}
 for __i = 0, 39 do
     themeRoleSwatch[__i] = function(parent, color, x, y)
@@ -7258,10 +6979,6 @@ local function themeRoleSwatchAt(i, parent, color, x, y)
     local fn = themeRoleSwatch[i]
     if fn then return fn(parent, color, x, y) end
 end
-
-
-
--- Expose on UILib.MD bridge after MD exists (patched at createGUI)
 TraceV2BindMD = function(MD)
     if not MD then return end
     MD.TraceHUD = TraceHUD
@@ -7280,11 +6997,8 @@ TraceV2BindMD = function(MD)
     MD.captureGunSlotC = captureGunSlotC
     MD.captureGunSlotD = captureGunSlotD
 end
-
-
 TraceExpand = (function()
     local E = { version = 2 }
-
     E.Session = {
         started = os.clock(),
         shots = 0, hits = 0, headshots = 0,
@@ -7312,7 +7026,6 @@ TraceExpand = (function()
     function E.Session.summary()
         return string.format('up %ds · acc %d%% · locks %d · trig %d', E.Session.uptime(), E.Session.accuracy(), E.Session.locks, E.Session.triggerFires)
     end
-
     E.HitMarkers = { pool = {}, active = {}, max = 12 }
     function E.HitMarkers.mount(parent)
         E.HitMarkers.root = UILib.newFrame(parent, {Name='HitMarkers', Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, ZIndex=45})
@@ -7336,7 +7049,6 @@ TraceExpand = (function()
         UILib.tween(m, 0.35, {TextTransparency = 1, Position = UDim2.fromOffset(sx, sy - 28)}):Play()
         task.delay(0.38, function() m.Visible = false end)
     end
-
     E.WeaponFilter = {}
     function E.WeaponFilter.parse(listStr)
         local out = {}
@@ -7362,7 +7074,6 @@ TraceExpand = (function()
         local n = 0; for _ in pairs(deny) do n = n + 1 end
         return n .. ' denied'
     end
-
     E.WeaponCatalog = {
         "AK-47",
         "M4A1",
@@ -7426,7 +7137,6 @@ TraceExpand = (function()
         end
         return hits
     end
-
     E.Motion = {
         Quad_In = { style = Enum.EasingStyle.Quad, dir = Enum.EasingDirection.In },
         Quad_Out = { style = Enum.EasingStyle.Quad, dir = Enum.EasingDirection.Out },
@@ -7463,7 +7173,6 @@ TraceExpand = (function()
         local m = E.Motion[key] or E.Motion.Quint_Out
         return UILib.tween(obj, t or 0.22, props, m.style, m.dir)
     end
-
     E.Schema = {}
     E.Schema.AimbotKeys = {
         "Enabled",
@@ -7545,7 +7254,6 @@ TraceExpand = (function()
             hud = E.Schema.validateSection(Settings.HUD, E.Schema.HUDKeys),
         }
     end
-
     E.Tips = {
         "RightCtrl toggles the Melo 🍃 hub.",
         "Rail Aim page holds aimbot, FOV, trigger, and rage.",
@@ -7571,7 +7279,6 @@ TraceExpand = (function()
     function E.Tips.random()
         return E.Tips[math.random(1, #E.Tips)]
     end
-
     E.Color = {}
     function E.Color.lighten(c, amt)
         return Color3.new(math.clamp(c.R + amt, 0, 1), math.clamp(c.G + amt, 0, 1), math.clamp(c.B + amt, 0, 1))
@@ -8220,7 +7927,6 @@ TraceExpand = (function()
     function E.Layouts.get(id)
         return E.Layouts['Recipe' .. tostring(id)]
     end
-
     E.BindLabels = {
         ToggleGUI = "Menu",
         PanicKey = "Panic",
@@ -8246,7 +7952,6 @@ TraceExpand = (function()
         table.sort(rows)
         return rows
     end
-
     E.Spectators = {}
     function E.Spectators.estimate()
         local out = {}
@@ -8260,7 +7965,7 @@ TraceExpand = (function()
                     table.insert(out, getDisplayName and getDisplayName(plr) or plr.Name)
                 else
                     local cam = S.Workspace.CurrentCamera
-                    -- soft heuristic: dead players often count as spectators in Arsenal
+
                     local hum = plr.Character and plr.Character:FindFirstChildOfClass('Humanoid')
                     if hum and hum.Health <= 0 then
                         table.insert(out, (getDisplayName and getDisplayName(plr) or plr.Name) .. ' (dead)')
@@ -8276,7 +7981,6 @@ TraceExpand = (function()
     end
     return E
 end)()
-
 TraceExpand.Color.darken = function(c, amt)
     return Color3.new(math.clamp(c.R - amt, 0, 1), math.clamp(c.G - amt, 0, 1), math.clamp(c.B - amt, 0, 1))
 end
@@ -8284,308 +7988,247 @@ TraceExpand.Color.mix = function(a, b, t)
     t = math.clamp(t or 0.5, 0, 1)
     return Color3.new(a.R + (b.R - a.R) * t, a.G + (b.G - a.G) * t, a.B + (b.B - a.B) * t)
 end
-
 TraceExpand.AimCurves = {}
 TraceExpand.AimCurves.C0 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C1 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C2 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C3 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C4 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C5 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C6 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C7 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C8 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C9 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C10 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C11 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C12 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C13 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C14 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C15 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C16 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C17 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C18 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C19 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C20 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C21 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C22 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C23 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C24 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C25 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C26 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C27 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C28 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C29 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C30 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C31 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C32 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C33 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C34 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C35 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C36 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C37 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C38 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C39 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C40 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C41 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C42 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C43 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C44 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C45 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C46 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C47 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C48 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C49 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C50 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C51 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C52 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C53 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C54 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C55 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C56 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.AimCurves.C57 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t
 end
-
 TraceExpand.AimCurves.C58 = function(t)
     t = math.clamp(t, 0, 1)
     return 1 - (1 - t) * (1 - t)
 end
-
 TraceExpand.AimCurves.C59 = function(t)
     t = math.clamp(t, 0, 1)
     return t * t * (3 - 2 * t)
 end
-
 TraceExpand.FOVStyles = {
     Thin = { thickness = 1.0, sides = 48, filled = false },
     Bold = { thickness = 2.2, sides = 64, filled = false },
@@ -8597,7 +8240,6 @@ TraceExpand.FOVStyles = {
 function TraceExpand.applyFOVStyle(name)
     return TraceExpand.FOVStyles[name]
 end
-
 TraceExpand.Migrate = {}
 TraceExpand.Migrate.v1 = function(settings)
     settings = settings or Settings
@@ -8606,7 +8248,6 @@ TraceExpand.Migrate.v1 = function(settings)
     settings.UI._migrated = 1
     return settings
 end
-
 TraceExpand.Migrate.v2 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8614,7 +8255,6 @@ TraceExpand.Migrate.v2 = function(settings)
     settings.UI._migrated = 2
     return settings
 end
-
 TraceExpand.Migrate.v3 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8622,7 +8262,6 @@ TraceExpand.Migrate.v3 = function(settings)
     settings.UI._migrated = 3
     return settings
 end
-
 TraceExpand.Migrate.v4 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8630,7 +8269,6 @@ TraceExpand.Migrate.v4 = function(settings)
     settings.UI._migrated = 4
     return settings
 end
-
 TraceExpand.Migrate.v5 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8638,7 +8276,6 @@ TraceExpand.Migrate.v5 = function(settings)
     settings.UI._migrated = 5
     return settings
 end
-
 TraceExpand.Migrate.v6 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8646,7 +8283,6 @@ TraceExpand.Migrate.v6 = function(settings)
     settings.UI._migrated = 6
     return settings
 end
-
 TraceExpand.Migrate.v7 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8654,7 +8290,6 @@ TraceExpand.Migrate.v7 = function(settings)
     settings.UI._migrated = 7
     return settings
 end
-
 TraceExpand.Migrate.v8 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8662,7 +8297,6 @@ TraceExpand.Migrate.v8 = function(settings)
     settings.UI._migrated = 8
     return settings
 end
-
 TraceExpand.Migrate.v9 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8670,7 +8304,6 @@ TraceExpand.Migrate.v9 = function(settings)
     settings.UI._migrated = 9
     return settings
 end
-
 TraceExpand.Migrate.v10 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8678,7 +8311,6 @@ TraceExpand.Migrate.v10 = function(settings)
     settings.UI._migrated = 10
     return settings
 end
-
 TraceExpand.Migrate.v11 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8686,7 +8318,6 @@ TraceExpand.Migrate.v11 = function(settings)
     settings.UI._migrated = 11
     return settings
 end
-
 TraceExpand.Migrate.v12 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8694,7 +8325,6 @@ TraceExpand.Migrate.v12 = function(settings)
     settings.UI._migrated = 12
     return settings
 end
-
 TraceExpand.Migrate.v13 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8702,7 +8332,6 @@ TraceExpand.Migrate.v13 = function(settings)
     settings.UI._migrated = 13
     return settings
 end
-
 TraceExpand.Migrate.v14 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8710,7 +8339,6 @@ TraceExpand.Migrate.v14 = function(settings)
     settings.UI._migrated = 14
     return settings
 end
-
 TraceExpand.Migrate.v15 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8718,7 +8346,6 @@ TraceExpand.Migrate.v15 = function(settings)
     settings.UI._migrated = 15
     return settings
 end
-
 TraceExpand.Migrate.v16 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8726,7 +8353,6 @@ TraceExpand.Migrate.v16 = function(settings)
     settings.UI._migrated = 16
     return settings
 end
-
 TraceExpand.Migrate.v17 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8734,7 +8360,6 @@ TraceExpand.Migrate.v17 = function(settings)
     settings.UI._migrated = 17
     return settings
 end
-
 TraceExpand.Migrate.v18 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8742,7 +8367,6 @@ TraceExpand.Migrate.v18 = function(settings)
     settings.UI._migrated = 18
     return settings
 end
-
 TraceExpand.Migrate.v19 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8750,7 +8374,6 @@ TraceExpand.Migrate.v19 = function(settings)
     settings.UI._migrated = 19
     return settings
 end
-
 TraceExpand.Migrate.v20 = function(settings)
     settings = settings or Settings
     settings.UI = settings.UI or {}
@@ -8758,7 +8381,6 @@ TraceExpand.Migrate.v20 = function(settings)
     settings.UI._migrated = 20
     return settings
 end
-
 function TraceExpand.Migrate.run(settings)
     local s = settings or Settings
     local v = (s.UI and s.UI._migrated) or 0
@@ -8768,7 +8390,6 @@ function TraceExpand.Migrate.run(settings)
     end
     return s
 end
-
 TraceExpand.SearchIndex = {
     Aimbot = {
         "aimbot",
@@ -8825,14 +8446,12 @@ function TraceExpand.SearchIndex.match(page, query)
     end
     return string.find(string.lower(page), query, 1, true) ~= nil
 end
-
 function TraceExpand.capPanelText()
     local lines = TraceInfo and TraceInfo.capLines and TraceInfo.capLines() or {}
     table.insert(lines, 1, TraceInfo and TraceInfo.summary() or 'Melo 🍃')
     table.insert(lines, TraceExpand.Tips.random())
     return table.concat(lines, '\n')
 end
-
 TraceExpand.CardMetrics = {}
 TraceExpand.CardMetrics.toggle = 28
 TraceExpand.CardMetrics.slider = 38
@@ -8849,7 +8468,6 @@ function TraceExpand.estimateCardHeight(rows)
     end
     return h
 end
-
 TraceExpand.SoundPresets = {
     ClassicHit = "911448825",
     Metal = "12222253",
@@ -8872,7 +8490,6 @@ function TraceExpand.applyKillSoundPreset(name)
     Settings.Audio.KillSoundId = id
     return true
 end
-
 TraceExpand.RailMeta = {
     Combat = {
         title = MW.allows("mm2") and "MM2" or (MW.allows("phantomforces") and "PF" or "Aim"),
@@ -8895,7 +8512,6 @@ TraceExpand.RailMeta = {
     },
     Config = { title = "Config", blurb = "Binds, theme, profiles, Cap" },
 }
-
 (function()
     if not UILib.Kit then return end
     function UILib.Kit.pageTitle(parent, title, blurb)
@@ -9269,7 +8885,6 @@ TraceExpand.RailMeta = {
         end)
     end
 end)()
-
 local _bindMD = TraceV2BindMD
 TraceV2BindMD = function(MD)
     if _bindMD then _bindMD(MD) end
@@ -9277,8 +8892,6 @@ TraceV2BindMD = function(MD)
     MD.TraceExpand = TraceExpand
     pcall(function() TraceExpand.Migrate.run(Settings) end)
 end
-
-
 (function()
     local Pack = {}
     Pack.ESPStyles = {
@@ -9296,7 +8909,6 @@ end
         Settings.ESP.Enabled = true
         return true
     end
-
     Pack.WorldRecipes = {
         Noon = {CustomBrightness=true, Brightness=2.2, CustomTime=true, ClockTime=12, CustomExposure=true, Exposure=0},
         Dusk = {CustomBrightness=true, Brightness=1.2, CustomTime=true, ClockTime=18.5, CustomExposure=true, Exposure=-0.2},
@@ -9314,16 +8926,14 @@ end
         if applyWorldLighting then applyWorldLighting() end
         return true
     end
-
     Pack.Notify = {}
     function Pack.Notify.route(kind, title, body)
         if TraceHUD and TraceHUD.pushFeed and (kind == 'hit' or kind == 'kill' or kind == 'info') then
             TraceHUD.pushFeed(string.upper(kind), title, body)
         end
-        -- toast layer intentionally muted in Trace; feed is primary
+
         return true
     end
-
     Pack.Places = {
         Arsenal = 286090429,
         Brookhaven = 4924922222,
@@ -9335,7 +8945,6 @@ end
         if game.PlaceId == Pack.Places.MM2 then return 'MM2: Rift kit wired into Melo 🍃' end
         return 'Universal: movement, Auto Obby, ESP; gunmods Arsenal-only'
     end
-
     Pack.CardRecipes = {}
     Pack.CardRecipes.Aimbot = { rows = 12, col = 1, order = 0 }
     Pack.CardRecipes.AimConfig = { rows = 10, col = 2, order = 1 }
@@ -9365,7 +8974,6 @@ end
         table.sort(list, function(a,b) return a.meta.order < b.meta.order end)
         return list
     end
-
     Pack.Chords = {}
     Pack.Chords.Slot0 = { id = 0, label = 'Chord0', armed = false }
     Pack.Chords.Slot1 = { id = 1, label = 'Chord1', armed = false }
@@ -9477,7 +9085,6 @@ end
             if s then s.armed = false end
         end
     end
-
     Pack.SensCurves = {}
     Pack.SensCurves.P0 = function(x)
         x = math.clamp(x, 0, 1)
@@ -9879,7 +9486,6 @@ end
         local k = 1.4500000000000002
         return 1 - math.exp(-k * x)
     end
-
     if TraceExpand then TraceExpand.Pack = Pack end
     local prev = TraceV2BindMD
     TraceV2BindMD = function(MD)
@@ -9887,11 +9493,10 @@ end
         if MD then MD.TracePack = Pack end
     end
 end)()
-
 UILib.V2 = (function()
     local V = { ver = 2 }
     function V.toggle(parent, label, y, initial, cb, badge)
-        -- thin wrapper used by future pages; mirrors addToggleRow semantics
+
         local row = UILib.newFrame(parent, {Size=UDim2.new(1,0,0,26), Position=UDim2.new(0,0,0,y), BackgroundTransparency=1})
         UILib.newLabel(row, {Size=UDim2.new(0.7,0,1,0), Text=label, TextColor3=Theme.TextPrimary, TextSize=12, Font=Enum.Font.Gotham, TextXAlignment=Enum.TextXAlignment.Left})
         if badge then UILib.Kit.badge(row, badge, Theme.WarnColor) end
@@ -10285,9 +9890,8 @@ UILib.V2 = (function()
     end
     return V
 end)();
-
 (function()
-    -- Soft-bind session analytics when aim locks / trigger fires
+
     local prevStart = startAimbotTracking
     if type(prevStart) == 'function' then
         startAimbotTracking = function(...)
@@ -10296,7 +9900,6 @@ end)();
         end
     end
 end)()
-
 TracePalettes = (function()
     local P = {}
     P.Ice = {'7DD3FC','38BDF8','0EA5E9','0284C7','0369A1','07080B','0C0D12','111827','E2E8F0','94A3B8'}
@@ -10383,7 +9986,6 @@ TracePalettes = (function()
     function P.ice_59() return P.Ice[(59 % #P.Ice) + 1] end
     return P
 end)()
-
 TraceDocs = (function()
     local D = {}
     D.aim_mode = "Camera moves view; Silent redirects bullets (no camera move)."
@@ -10411,12 +10013,9 @@ TraceDocs = (function()
     }
     return D
 end)()
-
-
 TracePack3 = (function()
     local P3 = { ver = 3 }
 
-    -- Multipoint offset weights (used by silent/camera aim when Multipoint is on)
     P3.MultiOffsets = {
         Head = {0, 0.15, 0},
         Upper = {0, 0.05, 0},
@@ -10435,14 +10034,12 @@ TracePack3 = (function()
         local oz = o[3] * weight
         return baseCF * CFrame.new(ox, oy, oz), pick
     end
-
     P3.HubChrome = {}
     function P3.HubChrome.mountPageHeader(page, railId)
         local meta = TraceExpand and TraceExpand.RailMeta and TraceExpand.RailMeta[railId]
         if not meta or not UILib.Kit or not UILib.Kit.pageTitle then return end
         return UILib.Kit.pageTitle(page, meta.title, meta.blurb)
     end
-
     P3.ProfileBrowser = {}
     function P3.ProfileBrowser.filter(list, query)
         query = string.lower(tostring(query or ''))
@@ -10457,7 +10054,6 @@ TracePack3 = (function()
         base = tostring(base or 'cfg')
         return base .. '_' .. tostring(os.time() % 100000)
     end
-
     P3.AssistSample_0 = function(dt, err)
         dt = math.clamp(dt or 0.016, 0.001, 0.1)
         err = tonumber(err) or 0
@@ -11658,7 +11254,6 @@ TracePack3 = (function()
         local k = 0.54
         return err * math.exp(-k * (dt * 60))
     end
-
     P3.RuntimeProbe = {}
     function P3.RuntimeProbe.snapshot()
         return {
@@ -11676,7 +11271,6 @@ TracePack3 = (function()
         local s = P3.RuntimeProbe.snapshot()
         return string.format('Melo 🍃 %s · %s · fps %d · ping %d · up %ds', tostring(s.version), s.arsenal and 'Arsenal' or 'Universal', s.fps, s.ping, s.uptime)
     end
-
     P3.CapEssays = {
         http = "HTTP powers WEAO, webhooks, server hop listings, and remote script loaders.",
         filesystem = "Filesystem stores Melo 🍃 profiles under the NOX_Hub folder when available.",
@@ -11689,14 +11283,12 @@ TracePack3 = (function()
     function P3.CapEssays.forFeature(f)
         return P3.CapEssays[f] or ''
     end
-
     P3.HubState = { open = true, lastToggle = 0 }
     function P3.HubState.noteToggle(open)
         P3.HubState.open = open and true or false
         P3.HubState.lastToggle = os.clock()
         if setMenuBlur then pcall(setMenuBlur, P3.HubState.open) end
     end
-
     P3.PageSeeds = {}
     P3.PageSeeds.Aimbot_0 = { page = "Aimbot", seed = 0, weight = 0.2 }
     P3.PageSeeds.Aimbot_1 = { page = "Aimbot", seed = 1, weight = 0.25 }
@@ -11945,10 +11537,8 @@ TracePack3 = (function()
         end
         return out
     end
-
     return P3
 end)();
-
 (function()
     local prev = TraceV2BindMD
     TraceV2BindMD = function(MD)
@@ -11956,7 +11546,6 @@ end)();
         if MD then MD.TracePack3 = TracePack3 end
     end
 end)()
-
 TraceAnim = (function()
     local A = {}
     A.RailIn = { t = 0.22, style = Enum.EasingStyle.Quint, dir = Enum.EasingDirection.Out }
@@ -12673,8 +12262,6 @@ TraceAnim = (function()
     end
     return A
 end)();
-
-
 (function()
     local LockAssert = {}
     function LockAssert.gunmodsExpected()
@@ -12696,7 +12283,6 @@ end)();
         if MD then MD.LockAssert = LockAssert end
     end
 end)()
-
 TraceUnloadChecklist = (function()
     local C = {
         'menu blur', 'HUD root', 'FOV drawings', 'ESP pools', 'gun wireframe',
@@ -12945,7 +12531,6 @@ TraceUnloadChecklist = (function()
     end
     return C
 end)()
-
 TraceBindMatrix = (function()
     local M = {}
     M.ToggleGUI_0 = function(v)
@@ -13484,7 +13069,4 @@ TraceBindMatrix = (function()
     end
     return M
 end)();
-
-
 end)()
-

@@ -1,20 +1,16 @@
--- Nested scope for Luau local limit
 ;(function()
-
 local DISCORD_INVITE = "https://discord.gg/zHGKqd92Pz"
 local DISCORD_CODE = "zHGKqd92Pz"
 local DISCORD_CODE_LABEL = "discord.gg/zHGKqd92Pz"
 local DISCORD_APP = "discord://-/invite/" .. DISCORD_CODE
 local FORCE_DISCORD_JOIN = false
-
 local Auth = {
-    Enabled = false, -- open / no license keys
+    Enabled = false,
     ScriptId = "arsenal",
     Url = "",
     AnonKey = "",
     SaveFile = "",
 }
-
 function Auth.copyText(text)
     local ok = false
     pcall(function()
@@ -33,7 +29,6 @@ function Auth.copyText(text)
     end
     return ok
 end
-
 function Auth.openDiscordRpc()
     local function rpc(cmd)
         local res = Auth.httpRequest({
@@ -57,7 +52,6 @@ function Auth.openDiscordRpc()
     if rpc("INVITE") then return true end
     return false
 end
-
 function Auth.tryOpenUrl(url)
     if not url or url == "" then return false end
     local opened = false
@@ -86,7 +80,6 @@ function Auth.tryOpenUrl(url)
     end
     return opened
 end
-
 local function openDiscordServer(opts)
     opts = opts or {}
     local quiet = opts.quiet == true
@@ -111,7 +104,6 @@ local function openDiscordServer(opts)
     end
     return opened, copied
 end
-
 local function forceDiscordJoin()
     if not FORCE_DISCORD_JOIN then return end
     local skip = false
@@ -120,11 +112,11 @@ local function forceDiscordJoin()
         if g and g.KYN_FROM_HUB then skip = true end
     end)
     if skip then return end
-    -- Hit Discord desktop RPC / protocol first, then https fallback + clipboard.
+
     openDiscordServer({ quiet = false })
     task.delay(2.2, function()
         if _G[MW_T.unloaded] then return end
-        -- Second push if Discord was slow to accept the first invite handoff.
+
         pcall(function()
             Auth.openDiscordRpc()
             Auth.tryOpenUrl(DISCORD_APP)
@@ -132,7 +124,6 @@ local function forceDiscordJoin()
         end)
     end)
 end
-
 local UILib = {
     TFast = 0.18,
     TMed = 0.28,
@@ -148,7 +139,6 @@ local UILib = {
     showDrawingMenu = nil,
     _hubWindowLayer = nil,
 }
-
 function UILib.newScreenGui(name, displayOrder)
     local sg = Instance.new("ScreenGui")
     sg.Name = name; sg.ResetOnSpawn = false
@@ -158,12 +148,10 @@ function UILib.newScreenGui(name, displayOrder)
     sg.Parent = player:WaitForChild("PlayerGui")
     return sg
 end
-
 function UILib.setZ(obj, z)
     if obj and z then obj.ZIndex = z end
     return obj
 end
-
 function UILib.layer(parent, zIndex)
     local f = UILib.newFrame(parent, {
         Name = MW_T.layer,
@@ -174,20 +162,17 @@ function UILib.layer(parent, zIndex)
     })
     return f
 end
-
 function UILib.newFrame(parent, props)
     local f = Instance.new("Frame")
     for k,v in pairs(props or {}) do f[k] = v end
     f.Parent = parent; return f
 end
-
 function UILib.newLabel(parent, props)
     local l = Instance.new("TextLabel")
     l.BackgroundTransparency = 1
     for k,v in pairs(props or {}) do l[k] = v end
     l.Parent = parent; return l
 end
-
 function UILib.newButton(parent, props, callback)
     local b = Instance.new("TextButton")
     for k, v in pairs(props or {}) do
@@ -209,20 +194,17 @@ function UILib.newButton(parent, props, callback)
     if callback then b.MouseButton1Click:Connect(callback) end
     return b
 end
-
 function UILib.newBox(parent, props)
     local b = Instance.new("TextBox")
     for k,v in pairs(props or {}) do b[k] = v end
     b.Parent = parent; return b
 end
-
 function UILib.corner(parent, radius)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, tonumber(radius) or 0)
     c.Parent = parent
     return c
 end
-
 function UILib.circle(parent)
     local c = parent:FindFirstChildOfClass("UICorner")
     if not c then
@@ -232,7 +214,6 @@ function UILib.circle(parent)
     c.CornerRadius = UDim.new(1, 0)
     return c
 end
-
 function UILib.stroke(parent, color, thickness, transparency)
     local s = Instance.new("UIStroke")
     if typeof(color) ~= "Color3" then color = Color3.fromRGB(36, 38, 46) end
@@ -241,7 +222,6 @@ function UILib.stroke(parent, color, thickness, transparency)
     s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     s.Parent = parent; return s
 end
-
 function UILib.gradient(parent, c1, c2, rotation)
     if typeof(c1) ~= "Color3" then c1 = Color3.fromRGB(16, 18, 26) end
     if typeof(c2) ~= "Color3" then c2 = c1 end
@@ -250,12 +230,10 @@ function UILib.gradient(parent, c1, c2, rotation)
     g.Rotation = rotation or 90
     g.Parent = parent; return g
 end
-
 function UILib.shadow(parent, size, transparency)
-    -- Fragment look: flat, no soft shadows
+
     return nil
 end
-
 function UILib.tween(obj, time, props, style, dir)
     return S.TweenService:Create(obj, TweenInfo.new(
         time or UILib.TMed,
@@ -263,7 +241,6 @@ function UILib.tween(obj, time, props, style, dir)
         dir or UILib.TDir
     ), props)
 end
-
 function UILib.glowStroke(parent, color, thickness, pulseMin, pulseMax)
     local s = UILib.stroke(parent, color, thickness or 1.5, pulseMin or 0.3)
     if pulseMin and pulseMax then
@@ -279,8 +256,6 @@ function UILib.glowStroke(parent, color, thickness, pulseMin, pulseMax)
     end
     return s
 end
-
--- Clean stroke icons (no wrong Material asset IDs)
 local Icons = {}
 function Icons.mount(parent, name, opts)
     opts = opts or {}
@@ -288,7 +263,6 @@ function Icons.mount(parent, name, opts)
     local color = opts.color or Color3.fromRGB(180, 184, 190)
     local z = opts.zIndex or 20
     name = string.lower(tostring(name or ""))
-
     local holder = Instance.new("Frame")
     holder.Name = MW_T.next(10)
     holder.BackgroundTransparency = 1
@@ -296,7 +270,6 @@ function Icons.mount(parent, name, opts)
     holder.Size = UDim2.fromOffset(size, size)
     holder.ZIndex = z
     holder.Parent = parent
-
     local function strokeFrame(props)
         local f = Instance.new("Frame")
         f.BackgroundTransparency = props.fill and 0 or 1
@@ -321,9 +294,8 @@ function Icons.mount(parent, name, opts)
         end
         return f
     end
-
     if name == "home" then
-        -- roof
+
         strokeFrame({ pos = UDim2.fromScale(0.5, 0.34), size = UDim2.fromScale(0.62, 0.1), rot = 40, thick = 1.6 })
         strokeFrame({ pos = UDim2.fromScale(0.5, 0.34), size = UDim2.fromScale(0.62, 0.1), rot = -40, thick = 1.6 })
         strokeFrame({ pos = UDim2.fromScale(0.5, 0.68), size = UDim2.fromScale(0.52, 0.42), corner = UDim.new(0, 2), thick = 1.6 })
@@ -359,7 +331,6 @@ function Icons.mount(parent, name, opts)
     else
         strokeFrame({ pos = UDim2.fromScale(0.5, 0.5), size = UDim2.fromScale(0.55, 0.55), corner = UDim.new(1, 0), thick = 1.5 })
     end
-
     local api = {}
     function api:SetColor(c)
         color = c
@@ -380,10 +351,8 @@ function Icons.mount(parent, name, opts)
     })
     return api
 end
-
-
 local Theme = {
-        -- kynport.vercel.app palette
+
         WindowBg=Color3.fromRGB(7,8,11),WindowBorder=Color3.fromRGB(36,38,46),
         SidebarBg=Color3.fromRGB(7,8,11),SidebarBorder=Color3.fromRGB(36,38,46),
         LogoText=Color3.fromRGB(125,211,252),LogoGlow=Color3.fromRGB(125,211,252),
@@ -409,20 +378,16 @@ local Theme = {
         ShadowColor=Color3.fromRGB(0,0,0),
         SubTabBg=Color3.fromRGB(7,8,11),SubTabActive=Color3.fromRGB(16,18,26),
 }
-
 local ThemeDefaults = {}
 for k, v in pairs(Theme) do ThemeDefaults[k] = v end
-
 function UILib.colorNear(a, b, tol)
     if typeof(a) ~= "Color3" or typeof(b) ~= "Color3" then return false end
     tol = tol or 0.04
     local dr, dg, db = a.R - b.R, a.G - b.G, a.B - b.B
     return (dr * dr + dg * dg + db * db) <= (tol * tol)
 end
-
 function UILib.rethemeTree(root, previousTheme)
     if not root or not root.Parent or type(previousTheme) ~= "table" then return end
-
     local orderedKeys = {
         "TextAccent", "ToggleOn", "ToggleOnGlow", "SliderFill", "SliderKnob", "TabIndicator", "TabIconActive",
         "LogoText", "LogoGlow", "NotifAccent", "RadarBorder", "InputFocus", "KeybindText", "EnumTextActive",
@@ -434,10 +399,8 @@ function UILib.rethemeTree(root, previousTheme)
         "EnumText", "ButtonText", "WarnColor", "SuccessColor", "ErrorColor",
         "ESP_Close", "ESP_Medium", "ESP_Far", "ESP_VeryFar",
     }
-
     local oldAccent = previousTheme.TextAccent or previousTheme.ToggleOn
     local newAccent = Theme.TextAccent or Theme.ToggleOn
-
     local function replacement(color)
         if typeof(color) ~= "Color3" then return nil end
         if oldAccent and newAccent and UILib.colorNear(color, oldAccent, 0.06) then
@@ -458,7 +421,6 @@ function UILib.rethemeTree(root, previousTheme)
         end
         return bestKey and Theme[bestKey] or nil
     end
-
     local objects = root:GetDescendants()
     table.insert(objects, root)
     for _, object in ipairs(objects) do
@@ -494,7 +456,6 @@ function UILib.rethemeTree(root, previousTheme)
         end)
     end
 end
-
 function Auth.httpRequest(opts)
     local req = (syn and syn.request)
         or (http and http.request)
@@ -508,17 +469,12 @@ function Auth.httpRequest(opts)
     if not ok then return nil, tostring(res) end
     return res
 end
-
 function Auth.saveKey(_key)
-    -- key system removed
-end
 
+end
 function Auth.loadKey()
     return nil
 end
-
--- WEAO capability gate
--- Nested for Luau local limit
 local Cap = (function()
 local Cap = {
     ready = false,
@@ -543,7 +499,6 @@ local Cap = {
     },
     reasons = {},
 }
-
 local CapFeatureNeeds = {
     http = { any = { "request", "http_request", "http.request", "syn.request" } },
     filesystem = { all = { "writefile", "readfile", "makefolder" } },
@@ -551,9 +506,8 @@ local CapFeatureNeeds = {
     drawing = { any = { "Drawing.new" } },
     hooks = { any = { "hookmetamethod", "hookfunction" } },
     getgc = { any = { "getgc" } },
-    gunmods = { any = { "writefile" } }, -- placeholder; forced off for weak execs below
+    gunmods = { any = { "writefile" } },
 }
-
 local CapFeatureLabels = {
     http = "Webhooks, server hop, remote scripts",
     filesystem = "Config save / load",
@@ -563,14 +517,12 @@ local CapFeatureLabels = {
     getgc = "GC scan APIs",
     gunmods = "Gun Mods (auto, recoil, spread, ammo, firerate)",
 }
-
 local function CapIsXenoOrSolara()
     local name = getExecutorName():lower()
     local title = tostring(Cap.title or ""):lower()
     local blob = name .. " " .. title
     return blob:find("xeno", 1, true) ~= nil or blob:find("solara", 1, true) ~= nil
 end
-
 local function CapResolve(name)
     if Cap.localOk[name] ~= nil then return Cap.localOk[name] end
     local cur = _G
@@ -581,7 +533,7 @@ local function CapResolve(name)
         end
         local ok, nxt = pcall(function() return cur[part] end)
         if not ok or nxt == nil then
-            -- also try raw global for first segment
+
             if cur == _G then
                 local ok2, g = pcall(function() return getfenv and getfenv(0)[part] or nil end)
                 if ok2 and g ~= nil then nxt = g else Cap.localOk[name] = false; return false end
@@ -599,38 +551,32 @@ local function CapResolve(name)
     Cap.localOk[name] = ok and true or false
     return Cap.localOk[name]
 end
-
 local function CapHasFailed(name)
     local n = tostring(name or ""):lower()
     if Cap.failed[n] then return true end
-    -- WEAO uses dotted names; also match bare last segment
+
     local bare = n:match("([^%.]+)$")
     if bare and Cap.failed[bare] then return true end
     return false
 end
-
 local function CapFnOk(name)
     if Cap.localOk[name] == true then return true end
     if CapHasFailed(name) then return false end
-    -- Matched WEAO entry and function not in failed list: treat as supported
+
     if Cap.fetchDone and Cap.matched then return true end
     if Cap.localOk[name] == nil then CapResolve(name) end
     return Cap.localOk[name] == true
 end
-
 function Cap.ok(feature)
     return Cap.features[feature] ~= false
 end
-
 function Cap.badge(feature)
     if Cap.ok(feature) then return nil end
     return Cap.reasons[feature] or "UNC"
 end
-
 function Cap.why(feature)
     return Cap.reasons[feature]
 end
-
 function Cap.recompute()
     for feature, spec in pairs(CapFeatureNeeds) do
         local ok = true
@@ -653,7 +599,7 @@ function Cap.recompute()
                 end
             end
         end
-        -- Drawing has ScreenGui FOV fallback: keep feature on even without Drawing
+
         if feature == "drawing" and not ok then
             ok = true
             why = nil
@@ -661,7 +607,7 @@ function Cap.recompute()
         Cap.features[feature] = ok
         Cap.reasons[feature] = why
     end
-    -- Force-lock gun mods on Xeno / Solara (unstable / incomplete UNC)
+
     if CapIsXenoOrSolara() then
         Cap.features.gunmods = false
         Cap.reasons.gunmods = "XENO/SOLARA"
@@ -671,7 +617,6 @@ function Cap.recompute()
     end
     Cap.ready = true
 end
-
 function Cap.lockedList()
     Cap.recompute()
     local order = { "gunmods", "http", "filesystem", "clipboard", "hooks", "getgc", "drawing" }
@@ -687,7 +632,6 @@ function Cap.lockedList()
     end
     return out
 end
-
 function Cap.probeLocal()
     local function mark(name, fn)
         local ok, val = pcall(fn)
@@ -719,7 +663,6 @@ function Cap.probeLocal()
     end)
     Cap.recompute()
 end
-
 function Cap.httpGet(url)
     local res = Auth.httpRequest({
         Url = url,
@@ -736,7 +679,6 @@ function Cap.httpGet(url)
     if ok and type(body) == "string" and body ~= "" then return body end
     return nil
 end
-
 local function CapMatchExecutor(list)
     local exec = getExecutorName():lower()
     local best, bestScore = nil, 0
@@ -768,12 +710,11 @@ local function CapMatchExecutor(list)
     if bestScore < 3 then return nil end
     return best
 end
-
 function Cap.fetchWeao()
     if Cap.fetching or Cap.fetchDone then return end
     Cap.fetching = true
     local ok, err = pcall(function()
-        -- Prefer host proxy so client never calls weao.xyz directly
+
         local raw = Cap.httpGet("https://trace-host.vercel.app/api/weao/exploits")
         if not raw or raw == "" then error("weao proxy unreachable") end
         raw = tostring(raw):gsub("^%s+", ""):gsub("%s+$", "")
@@ -800,14 +741,13 @@ function Cap.fetchWeao()
         end
     end)
     if not ok then
-        -- Local UNC probe still runs; host list is optional
+
         Cap.weaoError = tostring(err)
     end
     Cap.fetching = false
     Cap.fetchDone = true
     Cap.recompute()
 end
-
 function Cap.awaitWeao(timeout)
     Cap.probeLocal()
     if not Cap.fetching and not Cap.fetchDone then
@@ -820,17 +760,13 @@ function Cap.awaitWeao(timeout)
     end
     Cap.recompute()
 end
-
--- Start WEAO fetch early so createGUI wait is shorter
 task.spawn(function()
     Cap.probeLocal()
     Cap.fetchWeao()
 end)
-
 function Cap.apply()
     Cap.recompute()
 end
-
 function Cap.disableUnsupportedSettings(cfg)
     Cap.recompute()
     if type(cfg) ~= "table" then return end
@@ -847,7 +783,7 @@ function Cap.disableUnsupportedSettings(cfg)
         cfg.Combat.InfiniteAmmo = false
         cfg.Combat.WallBang = false
     end
-    -- Strip kit features that don't belong to this PlaceId (loaded configs stay quiet)
+
     if not MW.allows("aim") then
         if type(cfg.Aimbot) == "table" then cfg.Aimbot.Enabled = false end
     end
@@ -912,7 +848,6 @@ function Cap.disableUnsupportedSettings(cfg)
         end
     end
 end
-
 function Cap.summaryLine()
     local bits = {}
     if Cap.title then
@@ -942,7 +877,6 @@ function Cap.summaryLine()
     end
     return table.concat(bits, " | ")
 end
-
 function Cap.weakReasons()
     Cap.recompute()
     local reasons = {}
@@ -978,19 +912,15 @@ function Cap.weakReasons()
     end
     return reasons
 end
-
 function Cap.isWeak()
     return #Cap.weakReasons() > 0
 end
-
 return Cap
 end)()
-
 function Auth.validate(_key)
-    -- Key system removed: open script, never uploads player data
+
     return true, nil
 end
-
 function Auth.errorText(code)
     local map = {
         empty_key = "Enter a key",
@@ -1005,12 +935,9 @@ function Auth.errorText(code)
     }
     return map[code] or ("Failed: " .. tostring(code))
 end
-
 function Auth.showGate(onDone)
     if onDone then onDone() end
 end
-
--- Color / settings helpers (were wiped when Auth.showGate was stubbed; restored here)
 hexToColor3 = function(hex)
     hex = tostring(hex or ""):gsub("#", ""):gsub("%s+", "")
     if #hex ~= 6 then
@@ -1024,14 +951,12 @@ hexToColor3 = function(hex)
     end
     return Color3.fromRGB(r, g, b)
 end
-
 normalizeHex = function(hex)
     local h = tostring(hex or ""):gsub("#", ""):gsub("%s+", ""):upper()
     if #h ~= 6 then return nil end
     if not tonumber(h, 16) then return nil end
     return h
 end
-
 color3ToHex = function(c)
     if typeof(c) ~= "Color3" then return "FFFFFF" end
     return string.format("%02X%02X%02X",
@@ -1039,7 +964,6 @@ color3ToHex = function(c)
         math.floor(c.G * 255 + 0.5),
         math.floor(c.B * 255 + 0.5))
 end
-
 shiftColor = function(c, dr, dg, db)
     if typeof(c) ~= "Color3" then
         return Color3.fromRGB(125, 211, 252)
@@ -1055,7 +979,6 @@ shiftColor = function(c, dr, dg, db)
         clamp01(c.B + (db or 0))
     )
 end
-
 local function applyEspPalette()
     if not Settings or type(Settings.ESP) ~= "table" then return end
     local esp = Settings.ESP
@@ -1090,7 +1013,6 @@ local function applyEspPalette()
         Theme.ESP_Outline = esp.OutlineColor or Color3.fromRGB(210, 210, 220)
     end
 end
-
 ensureUISettings = function()
     if not Settings then return end
     if type(Settings.UI) ~= "table" then
@@ -1105,7 +1027,7 @@ ensureUISettings = function()
             BlurMenu = true,
         }
     end
-    -- Migrate old Fade blue defaults -> kynport ice
+
     do
         local ui = Settings.UI
         local acc = tostring(ui.AccentHex or ""):upper()
@@ -1125,7 +1047,7 @@ ensureUISettings = function()
         if ui.Autosave == nil then ui.Autosave = false end
         if ui.BlurMenu == nil then ui.BlurMenu = true end
     end
-    -- Fill missing keys from boot defaults (profile load / older configs)
+
     if SettingsDefaults then
         for cat, vals in pairs(SettingsDefaults) do
             if type(vals) == "table" then
@@ -1144,7 +1066,6 @@ ensureUISettings = function()
         Settings.Webhook.Hooks = {}
     end
 end
-
 function UILib.clampRadarPoint(nx, ny, maxR)
     local dist = math.sqrt(nx * nx + ny * ny)
     if dist > maxR and dist > 0.001 then
@@ -1153,11 +1074,9 @@ function UILib.clampRadarPoint(nx, ny, maxR)
     end
     return nx, ny
 end
-
 local themeCallbacks = {}
 local themeHexFields = {}
 local uiParticleSystems = {}
-
 local function syncLegacyKeys()
     Theme.Background=Theme.ContentBg; Theme.BackgroundDark=Theme.SidebarBg; Theme.BackgroundLight=Theme.CardBg
     Theme.AccentPink=Theme.CardHeaderBg; Theme.AccentBright=Theme.TextAccent; Theme.AccentDark=Theme.TabBgActive
@@ -1166,7 +1085,6 @@ local function syncLegacyKeys()
     Theme.CheckboxEnabled=Theme.ToggleOn; Theme.CheckboxDisabled=Theme.ToggleOff
     Theme.SliderBackground=Theme.SliderTrack
 end
-
 local function applyCustomTheme()
     if not Settings then return end
     ensureUISettings()
@@ -1229,7 +1147,6 @@ local function applyCustomTheme()
     local accentCol = hexToColor3(Settings.UI.AccentHex)
     for _, sys in ipairs(uiParticleSystems) do pcall(function() sys.setAccent(accentCol) end) end
 end
-
 local function resetThemeDefaults()
     ensureUISettings()
     if Settings.UI then
@@ -1240,13 +1157,9 @@ local function resetThemeDefaults()
     end
     applyCustomTheme()
 end
-
--- themeCallbacks / themeHexFields / uiParticleSystems declared above applyCustomTheme
 syncLegacyKeys()
-
 local currentGameData = { name = "Arsenal", espEnabled = true }
 local gameConfig = { espEnabled = true }
-
 Settings = {
     ESP={Enabled=false,BoxStyle="2D",BoxEnabled=true,BoxFill=false,NameEnabled=true,HealthEnabled=false,HealthBar=true,HealthBased=true,DistanceEnabled=true,TracerEnabled=false,SkeletonEnabled=false,HeadDotEnabled=false,OffscreenArrows=false,ArrowShowPfp=true,SelfESP=false,VisibleCheck=false,RenderDistance=8000,TextBackground=false,RainbowOutline=false,RainbowColor=false,OutlineEnabled=false,OutlineColor=Color3.fromRGB(210,210,220),TracerOrigin="Bottom",TracerThickness=1,TracerTransparency=0.2,TracerRainbowColor=false,BoxThickness=2,BoxCornerLength=0.32,SkeletonThickness=1,Transparency=0,FontSize=13,Offset=0,ArrowSize=28,ArrowDistance=500,ChamsEnabled=false,ChamsFillTransparency=0.62,FilterMode="Enemies",GlowEnabled=false,GlowTransparency=0.72,ThrowableEnabled=false,ThrowableMaxDistance=250,WeaponLabels=false,ThrowableArcPreview=false,ThrowableArcPower=72,ThrowableArcLift=24,ThrowableArcSegments=22,AutoTeamDetect=true,CompactLabels=true,MaxNameChars=12,LabelFadeStart=140,LabelFadeEnd=320,LinkToAccent=true,CloseHex="FFFFFF",MediumHex="E9EBEF",FarHex="A2A5AA",VeryFarHex="7D8086",BoxHex="",TracerHex="",SkeletonHex="",ChamsHex="",OutlineHex="D2D2DC",NameHex=""},
     Aimbot={Enabled=false,Toggle=false,StickyAim=true,AimMode="Camera",SilentHitboxSize=6,LockPart="Head",Smoothness=0.15,SmoothProfile="Custom",FOVRadius=150,ShowFOV=true,FOVStyle="Circle",FOVDots=12,FOVDotSize=3,FOVSpinSpeed=1.2,FOVThickness=1.5,FOVOpacity=0.5,ShowSilentFOV=false,SilentFOVRadius=180,RequireLOS=false,Prediction=true,PredictionAmount=0.12,PredictionAccel=true,HitChance=100,Multipoint=true,SilentFOVOnly=true,SilentHitbox=false,MaxDistance=500,MultiTarget=false,TargetPriority="Crosshair",MultipointWeight=0.55},
@@ -1295,11 +1208,8 @@ Settings = {
     },
     UI={AccentHex="6759B3",BackgroundHex="16161F",SurfaceHex="181925",ToggleHex="6759B3",MenuScale=1,ThemePreset="Purple",Autosave=false,BlurMenu=true},
 }
-
--- Radar temp-disabled
 local RADAR_TEMP_DISABLED = true
 if RADAR_TEMP_DISABLED then Settings.Radar.Enabled = false end
-
 do
     local snap = {}
     for cat, vals in pairs(Settings) do
@@ -1313,9 +1223,7 @@ do
     end
     SettingsDefaults = snap
 end
-
 ensureUISettings()
-
 local PROFILE_DIR = "NOX_Hub/"
 local currentProfileName = "Default"
 local postLoadHooks = {}
@@ -1386,7 +1294,6 @@ local function loadProfile(name)
     return ok, err
 end
 local function deleteProfile(name) pcall(function() if isfile(profilePath(name)) then delfile(profilePath(name)) end end) end
-
 local allConnections = {}
 local espObjects     = {}
 local espBoundsCache = {}
@@ -1402,7 +1309,6 @@ local VisPerf = {
 }
 local espBillboardLayer = nil
 local startupChangelogCache = nil
-
 function UILib.sampleVisualFps(dt)
     if not dt or dt <= 0 then return end
     VisPerf.fpsSamples = VisPerf.fpsSamples or {}
@@ -1412,7 +1318,6 @@ function UILib.sampleVisualFps(dt)
     for _, v in ipairs(VisPerf.fpsSamples) do sum = sum + v end
     VisPerf.fps = sum / #VisPerf.fpsSamples
 end
-
 function UILib.noteCameraMotion(camCF)
     if not camCF then return end
     local last = VisPerf.lastCamCF
@@ -1425,7 +1330,6 @@ function UILib.noteCameraMotion(camCF)
     end
     VisPerf.lastCamCF = camCF
 end
-
 function UILib.refreshVSyncLock()
     VisPerf.lockChams = false
     VisPerf.lockSkel = false
@@ -1454,7 +1358,6 @@ function UILib.refreshVSyncLock()
         VisPerf.lockFill = true
     end
 end
-
 function UILib.getVisualTickIntervals()
     if Settings.Visuals.VSync then
         local fps = math.clamp(VisPerf.fps or 60, 20, 240)
@@ -1463,7 +1366,6 @@ function UILib.getVisualTickIntervals()
     end
     return VisPerf.overlay, VisPerf.heavy, VisPerf.miscVis, VisPerf.los, VisPerf.radar
 end
-
 function UILib.espBoundsInstant()
     return Settings.Visuals.VSync or VisPerf.camMoved
 end
@@ -1492,7 +1394,6 @@ local keybindCapture       = nil
 local keybindIgnoreUntil   = 0
 local AIMBOT_HOLD_BIND     = Enum.UserInputType.MouseButton2
 local guiMainFrame         = nil
-
 local rigCache = {}
 local function clearRigCache(userId) rigCache[userId] = nil end
 local function detectRig(character)
@@ -1571,7 +1472,6 @@ local function getRig(target)
     if not rigCache[uid] then local rd = detectRig(char); if rd then rd._char = char; rigCache[uid] = rd end end
     return rigCache[uid]
 end
-
 local function getWorldCharacter(plr)
     if not plr then return nil end
     if MW.isPF and MW.TracePF then
@@ -1587,7 +1487,6 @@ local function getWorldCharacter(plr)
     end
     return plr.Character
 end
-
 local function hasWorldBody(plr)
     if MW.isPF and MW.TracePF and MW.TracePF.getRig then
         local rd = MW.TracePF.getRig(plr)
@@ -1596,11 +1495,9 @@ local function hasWorldBody(plr)
     end
     return plr and plr.Character ~= nil
 end
-
 local notifScreenGui = nil
 local notifLayerRef = nil
 local function sendNotification(_title, _message, _duration) end
-
 local function getArsenalFFA()
     local ok, ffa = pcall(function()
         local wkspc = game:GetService("ReplicatedStorage"):FindFirstChild("wkspc")
@@ -1608,14 +1505,12 @@ local function getArsenalFFA()
     end)
     return ok and ffa and ffa:IsA("BoolValue") and ffa.Value
 end
-
 local function normalizeTeamId(v)
     if v == nil then return nil end
     local s = tostring(v)
     if s == "" or s == "nil" or s == "None" then return nil end
     return s
 end
-
 local function getPlayerTeamId(plr)
     if not plr then return nil end
     if MW.isPF then
@@ -1626,7 +1521,7 @@ local function getPlayerTeamId(plr)
         local tid = ok and normalizeTeamId(name) or nil
         if tid then return tid end
     end
-    -- Arsenal primary: ReplicatedStorage.Players.<Name>.Status.Team
+
     local ok, fromRs = pcall(function()
         local folder = game:GetService("ReplicatedStorage"):FindFirstChild("Players")
         local pf = folder and folder:FindFirstChild(plr.Name)
@@ -1637,7 +1532,6 @@ local function getPlayerTeamId(plr)
     end)
     local tid = ok and normalizeTeamId(fromRs) or nil
     if tid then return tid end
-
     local char = plr.Character
     if char then
         local tv = char:FindFirstChild("Team")
@@ -1657,13 +1551,11 @@ local function getPlayerTeamId(plr)
     if plr.Team then return normalizeTeamId(plr.Team.Name) end
     return nil
 end
-
 local function isSpectatorTeam(tid)
     if not tid then return false end
     local lower = string.lower(tid)
     return lower == "spectator" or lower == "spectators" or lower == "none"
 end
-
 local function isSameTeam(p1, p2)
     if not p1 or not p2 or p1 == p2 then return true end
     if MW.isArsenal and getArsenalFFA() then return false end
@@ -1677,32 +1569,27 @@ local function isSameTeam(p1, p2)
         if ok then return same end
     end
     local t1, t2 = getPlayerTeamId(p1), getPlayerTeamId(p2)
-    -- Spectators are never valid combat/ESP enemies
+
     if isSpectatorTeam(t1) or isSpectatorTeam(t2) then return true end
     if t1 and t2 then return t1 == t2 end
     if p1.Team and p2.Team then return p1.Team == p2.Team end
-    -- Arsenal TDM with unknown teams: treat as teammates (safer)
-    -- Universal / no team data: treat as enemies so ESP/aimbot still work
+
     if not MW.isArsenal then return false end
     return true
 end
-
 local AIM_SMOOTH_PROFILES = {
     Legit = { Smoothness = 0.08, PredictionAmount = 0.08, FOVRadius = 80 },
     Semi = { Smoothness = 0.18, PredictionAmount = 0.12, FOVRadius = 130 },
     Rage = { Smoothness = 0.55, PredictionAmount = 0.2, FOVRadius = 220 },
 }
-
 local lastDetectedMatchMode = nil
 local matchModeStatusLbl = nil
-
 local function getEffectiveFilterMode()
     if Settings.ESP and Settings.ESP.AutoTeamDetect and MW.isArsenal and getArsenalFFA() then
         return "Enemies"
     end
     return Settings.ESP and Settings.ESP.FilterMode or "Enemies"
 end
-
 local function getAimSmoothness()
     local profile = Settings.Aimbot and Settings.Aimbot.SmoothProfile
     if profile and profile ~= "Custom" and AIM_SMOOTH_PROFILES[profile] then
@@ -1710,7 +1597,6 @@ local function getAimSmoothness()
     end
     return Settings.Aimbot.Smoothness or 0.15
 end
-
 local function getAimPredictionAmount()
     local profile = Settings.Aimbot and Settings.Aimbot.SmoothProfile
     if profile and profile ~= "Custom" and AIM_SMOOTH_PROFILES[profile] then
@@ -1718,8 +1604,6 @@ local function getAimPredictionAmount()
     end
     return Settings.Aimbot.PredictionAmount or 0.12
 end
-
-
 local function applyMultipointCF(cf)
     if not Settings.Aimbot.Multipoint then return cf end
     if TracePack3 and TracePack3.pickMultipoint then
@@ -1728,7 +1612,6 @@ local function applyMultipointCF(cf)
     end
     return cf
 end
-
 local function getAimFOVRadius()
     local profile = Settings.Aimbot and Settings.Aimbot.SmoothProfile
     if profile and profile ~= "Custom" and AIM_SMOOTH_PROFILES[profile] then
@@ -1736,7 +1619,6 @@ local function getAimFOVRadius()
     end
     return Settings.Aimbot.FOVRadius or 150
 end
-
 local function applyAimSmoothProfile(name)
     Settings.Aimbot.SmoothProfile = name
     local preset = AIM_SMOOTH_PROFILES[name]
@@ -1745,7 +1627,6 @@ local function applyAimSmoothProfile(name)
     Settings.Aimbot.PredictionAmount = preset.PredictionAmount
     Settings.Aimbot.FOVRadius = preset.FOVRadius
 end
-
 local Pack = {
     Legit = {
         AimMode = "Camera", SmoothProfile = "Legit", StickyAim = true, RequireLOS = true,
@@ -1769,7 +1650,6 @@ local Pack = {
         TriggerBot = true, RageBot = false,
     },
 }
-
 function Pack.apply(name)
     local pack = Pack[name]
     if not pack then return false end
@@ -1795,7 +1675,6 @@ function Pack.apply(name)
     runUiSync()
     return true
 end
-
 function Pack.applyVisuals()
     ensureUISettings()
     Settings.ESP.Enabled = true
@@ -1808,7 +1687,6 @@ function Pack.applyVisuals()
     runUiSync()
     return true
 end
-
 function Pack.applyMovement()
     ensureUISettings()
     Settings.Movement.SpeedEnabled = true
@@ -1819,7 +1697,6 @@ function Pack.applyMovement()
     runUiSync()
     return true
 end
-
 local function cleanCfgName(name)
     name = tostring(name or "")
     name = name:match("^%s*(.-)%s*$") or ""
@@ -1827,11 +1704,9 @@ local function cleanCfgName(name)
     if #name > 32 then name = name:sub(1, 32) end
     return name
 end
-
 local function autoloadPath()
     return PROFILE_DIR .. "_autoload.txt"
 end
-
 local function readAutoloadName()
     local name = ""
     pcall(function()
@@ -1841,7 +1716,6 @@ local function readAutoloadName()
     end)
     return cleanCfgName(name)
 end
-
 local function writeAutoloadName(name)
     if not Cap.ok("filesystem") then return false end
     ensureDir()
@@ -1849,7 +1723,6 @@ local function writeAutoloadName(name)
         writefile(autoloadPath(), cleanCfgName(name or ""))
     end)
 end
-
 local function applyNamedConfig(name)
     name = cleanCfgName(name)
     if name == "" then return false, "empty" end
@@ -1867,7 +1740,6 @@ local function applyNamedConfig(name)
     end
     return false, "missing"
 end
-
 local function refreshMatchModeDetect(forceNotify)
     if not Settings.ESP or not Settings.ESP.AutoTeamDetect then
         if matchModeStatusLbl then matchModeStatusLbl.Text = "Mode: Manual filter" end
@@ -1893,7 +1765,6 @@ local function refreshMatchModeDetect(forceNotify)
         sendNotification(MW.hub, mode == "FFA" and "FFA detected - all players are targets" or "Team mode - using your ESP filter", 3)
     end
 end
-
 local function hookMatchModeDetect()
     if not MW.isArsenal then return end
     pcall(function()
@@ -1908,7 +1779,6 @@ local function hookMatchModeDetect()
         end
     end)
 end
-
 local function isValidRadarTarget(admin, target)
     if not target or target == admin then return false end
     local mode = getEffectiveFilterMode()
@@ -1916,13 +1786,10 @@ local function isValidRadarTarget(admin, target)
     if mode == "Team" then return isSameTeam(admin, target) end
     return not isSameTeam(admin, target)
 end
-
 local streamerUiRefs = {}
-
 local function isStreamerActive()
     return Settings.Misc and (Settings.Misc.StreamerMode or Settings.Misc.StreamerModePlus)
 end
-
 local function applyStreamerPrivacy()
     if not Settings.Misc then return end
     local plus = Settings.Misc.StreamerModePlus
@@ -1939,7 +1806,6 @@ local function applyStreamerPrivacy()
     elseif r.footerCenter then r.footerCenter.Text = MW.tagline end
     if r.updateServerInfo then r.updateServerInfo() end
 end
-
 local function getDisplayName(target)
     if not target then return "Player" end
     if Settings.Misc.StreamerModePlus then
@@ -1950,7 +1816,6 @@ local function getDisplayName(target)
     end
     return target.DisplayName or target.Name
 end
-
 local function getPlayerWeaponName(plr)
     if not plr then return nil end
     if MW.isPF and MW.TracePF and MW.TracePF.getWeaponName then
@@ -2006,20 +1871,16 @@ local function isValidESPTarget(admin,target)
     if mode=="All" then return true elseif mode=="Team" then return isSameTeam(admin,target) else return not isSameTeam(admin,target) end
 end
 local function isValidTarget(admin,target) if target==admin then return false end; if isSameTeam(admin,target) then return false end; return true end
-
 local _losRP = RaycastParams.new()
 _losRP.FilterType = Enum.RaycastFilterType.Exclude
 local _losCachedChar = nil
--- Forward-declared: filled in with Wall Bang hooks near gun mods.
 local WB
 local function hasLOS(admin, target)
-    -- Multipoint + soft-prop pass: doorway/window frames and glass were
-    -- failing a single HRP ray even when the enemy head was clearly visible.
+
     local ac = getWorldCharacter(admin) or admin.Character
     local tc = getWorldCharacter(target)
     if not tc then return false end
     if not ac and not (MW.isPF and S.Workspace.CurrentCamera) then return false end
-
     local cam = S.Workspace.CurrentCamera
     local origin = cam and cam.CFrame.Position or nil
     if not origin then
@@ -2027,7 +1888,6 @@ local function hasLOS(admin, target)
         if not ah then return false end
         origin = ah.Position
     end
-
     local points = {}
     local rd = getRig(target)
     if rd then
@@ -2055,7 +1915,6 @@ local function hasLOS(admin, target)
             return false
         end
     end
-
     local function softBlock(inst)
         if not inst or not inst:IsA("BasePart") then return false end
         if inst.Transparency >= 0.8 then return true end
@@ -2066,11 +1925,10 @@ local function hasLOS(admin, target)
             or string.find(n, "pane", 1, true) or string.find(n, "rail", 1, true) then
             return true
         end
-        -- thin non-colliding props (common on Arsenal map trim / frames)
+
         if inst.CanCollide == false and inst.Transparency > 0.05 then return true end
         return false
     end
-
     local filter = {}
     if ac then filter[#filter + 1] = ac end
     if cam then filter[#filter + 1] = cam end
@@ -2080,7 +1938,6 @@ local function hasLOS(admin, target)
     if MW.isPF and ignoreFolder then filter[#filter + 1] = ignoreFolder end
     _losRP.FilterDescendantsInstances = filter
     _losCachedChar = ac
-
     if WB then WB.bypass = true end
     local visible = false
     pcall(function()
@@ -2115,7 +1972,7 @@ local function hasLOS(admin, target)
                     from = hit.Position + dir.Unit * 0.12
                     hops = hops + 1
                 else
-                    break -- solid for this bone: try next multipoint
+                    break
                 end
             end
         end
@@ -2165,7 +2022,6 @@ local function bindName(bind)
     if type(bind) == "string" and bind ~= "" then return bind end
     return "None"
 end
-
 local function restoreEnumBind(val, fallback)
     if typeof(val) == "EnumItem" then return val end
     if type(val) == "string" and val ~= "" then
@@ -2173,7 +2029,6 @@ local function restoreEnumBind(val, fallback)
     end
     return fallback
 end
-
 local function inputMatchesBind(input, bind)
     bind = restoreEnumBind(bind, nil)
     if not bind or bind == Enum.KeyCode.Unknown then return false end
@@ -2185,7 +2040,6 @@ local function inputMatchesBind(input, bind)
     end
     return false
 end
-
 local function isPlayerScoped()
     local cam = S.Workspace.CurrentCamera
     if not cam then return false end
@@ -2194,7 +2048,6 @@ local function isPlayerScoped()
     end
     return cam.FieldOfView < 52
 end
-
 local function refreshThemeHexFields()
     if not Settings.UI then return end
     for key, field in pairs(themeHexFields) do
@@ -2204,14 +2057,12 @@ local function refreshThemeHexFields()
         end
     end
 end
-
 local function getESPColor(dist)
     if dist < 90 then return Theme.ESP_Close or Theme.TextAccent
     elseif dist < 180 then return Theme.ESP_Medium or Theme.TextAccent
     elseif dist < 280 then return Theme.ESP_Far or Color3.fromRGB(220, 222, 230)
     else return Theme.ESP_VeryFar or Color3.fromRGB(190, 192, 202) end
 end
-
 local function getESPPartColor(hexKey, themeColor, dist, rainbow)
     if rainbow then return rainbow end
     local h = Settings.ESP and Settings.ESP[hexKey]
@@ -2220,17 +2071,14 @@ local function getESPPartColor(hexKey, themeColor, dist, rainbow)
     end
     return getESPColor(dist)
 end
-
 local function getHeadDotColor()
     return Theme.TextAccent or hexToColor3(Settings.UI and Settings.UI.AccentHex or "7DD3FC")
 end
-
 local function getHealthColor(pct)
     if pct > 0.6 then return Color3.fromRGB(92, 220, 120)
     elseif pct > 0.3 then return Color3.fromRGB(235, 185, 70)
     else return Color3.fromRGB(230, 78, 78) end
 end
-
 local function getESPLabelFade(dist)
     local a = Settings.ESP.LabelFadeStart or 140
     local b = Settings.ESP.LabelFadeEnd or 320
@@ -2238,14 +2086,12 @@ local function getESPLabelFade(dist)
     if dist >= b then return 0.72 end
     return ((dist - a) / math.max(b - a, 1)) * 0.72
 end
-
 local function truncateESPName(name)
     local maxLen = math.max(4, math.floor(Settings.ESP.MaxNameChars or 12))
     name = tostring(name or "")
     if #name <= maxLen then return name end
     return string.sub(name, 1, maxLen - 1) .. "…"
 end
-
 local function buildESPMetaText(dist, hp, maxhp)
     local compact = Settings.ESP.CompactLabels ~= false
     local parts = {}
@@ -2258,7 +2104,6 @@ local function buildESPMetaText(dist, hp, maxhp)
     if #parts == 0 then return "" end
     return compact and table.concat(parts, " · ") or table.concat(parts, "  ")
 end
-
 local function buildTargetList()
     local cam=S.Workspace.CurrentCamera; if not cam then return end
     local myChar=getWorldCharacter(player) or player.Character
@@ -2286,7 +2131,7 @@ local function buildTargetList()
                 local dist=(myRoot.Position-rd.root.Position).Magnitude
                 if dist<=Settings.Aimbot.MaxDistance then
                     if not needLos or hasLOS(player,t) then
-                        -- score by closest on-screen bone (head beats HRP behind a frame)
+
                         local wc = getWorldCharacter(t)
                         local bestScreen=nil
                         local probe={
@@ -2344,7 +2189,7 @@ local function buildTargetList()
             if ah ~= bh then return ah < bh end
             return a.screenDist < b.screenDist
         elseif prio == "Threat" then
-            -- nearer + more on-screen = higher threat
+
             local as = a.dist * 0.35 + a.screenDist
             local bs = b.dist * 0.35 + b.screenDist
             return as < bs
@@ -2354,8 +2199,6 @@ local function buildTargetList()
 end
 local function cycleTarget() buildTargetList(); if #targetList==0 then currentTarget=nil; return end; targetIndex=targetIndex+1; if targetIndex>#targetList then targetIndex=1 end; currentTarget=targetList[targetIndex].player; sendNotification("Target","Locked: "..getDisplayName(currentTarget),1.5) end
 local function getNearestTarget() buildTargetList(); if #targetList==0 then return nil end; targetIndex=1; return targetList[1].player end
--- Arsenal silent aim (raycast / Mouse.Hit redirect)
--- Table keeps SilentHB under local limit
 local SilentRay
 local SilentHB = {
     parts = { "RightUpperLeg", "LeftUpperLeg", "HeadHB", "HumanoidRootPart" },
@@ -2369,11 +2212,9 @@ local SilentHB = {
     hcPass = true,
     hcUntil = 0,
 }
-
 function SilentHB.shouldRun()
     return false
 end
-
 function SilentHB.passHitChance()
     local chance = tonumber(Settings.Aimbot.HitChance) or 100
     chance = math.clamp(chance, 1, 100)
@@ -2384,7 +2225,6 @@ function SilentHB.passHitChance()
     SilentHB.hcPass = (math.random(1, 100) <= chance)
     return SilentHB.hcPass
 end
-
 function SilentHB.pickPart(char)
     if not char then return nil end
     local cam = S.Workspace.CurrentCamera
@@ -2412,7 +2252,6 @@ function SilentHB.pickPart(char)
     for i = 1, #names do consider(char:FindFirstChild(names[i])) end
     return best
 end
-
 function SilentHB.recordVel(plr, vel)
     if not plr then return end
     local uid = plr.UserId
@@ -2429,7 +2268,6 @@ function SilentHB.recordVel(plr, vel)
     h.v = vel
     h.t = now
 end
-
 function SilentHB.predictPos(target)
     local rd = getRig(target)
     local char = getWorldCharacter(target)
@@ -2452,7 +2290,7 @@ function SilentHB.predictPos(target)
         lead = lead * (1 + math.clamp(dist / 350, 0, 0.85))
     end
     pos = pos + vel * lead
-    do -- Accel prediction always on
+    do
         local h = SilentHB.velHist[target.UserId]
         if h and h.a then
             local am = h.a.Magnitude
@@ -2463,7 +2301,6 @@ function SilentHB.predictPos(target)
     end
     return pos
 end
-
 function SilentHB.restorePart(part)
     local o = SilentHB.orig[part]
     if o and part then
@@ -2481,7 +2318,6 @@ function SilentHB.restorePart(part)
     SilentHB.orig[part] = nil
     SilentHB.appliedSize[part] = nil
 end
-
 function SilentHB.restoreAll()
     local parts = {}
     for part in pairs(SilentHB.orig) do
@@ -2493,13 +2329,11 @@ function SilentHB.restoreAll()
     SilentHB.orig = {}
     SilentHB.appliedSize = {}
 end
-
 function SilentHB.inSilentScope(plr)
     if plr == currentTarget then return true end
     if Settings.Aimbot.SilentFOVOnly == false then return true end
     return isInFOV(plr, getAimFOVRadius())
 end
-
 function SilentHB.applyChar(plr, char)
     if not plr or not char then return end
     if MW.guard("hitbox") then return end
@@ -2540,7 +2374,6 @@ function SilentHB.applyChar(plr, char)
         end
     end
 end
-
 function SilentHB.adaptInterval()
     local base = VisPerf.silentBaseIv or 0.35
     local fps = math.clamp(VisPerf.fps or 60, 20, 240)
@@ -2551,7 +2384,6 @@ function SilentHB.adaptInterval()
     SilentHB.tickIv = math.clamp(iv, 0.08, 0.9)
     return SilentHB.tickIv
 end
-
 function SilentHB.tick()
     if MW.guard("hitbox") then
         if next(SilentHB.orig) ~= nil then SilentHB.restoreAll() end
@@ -2576,12 +2408,10 @@ function SilentHB.tick()
         end
     end
 end
-
 function SilentHB.stop()
     SilentHB.running = false
     SilentHB.restoreAll()
 end
-
 function SilentHB.start()
     SilentHB.restoreAll()
     SilentHB.running = true
@@ -2595,7 +2425,6 @@ function SilentHB.start()
     if SilentRay and SilentRay.ensure then SilentRay.ensure() end
     if SilentRay and SilentRay.startLoop then SilentRay.startLoop() end
 end
-
 function SilentHB.refresh()
     if SilentHB.shouldRun() then
         SilentHB.start()
@@ -2604,9 +2433,6 @@ function SilentHB.refresh()
         SilentHB.stop()
     end
 end
-
--- Silent aim (crash-safe): Heartbeat caches target; hooks only read cache.
--- Ray redirect only (no fake returns). No BitBuffer remotes. Reentrancy guarded.
 SilentRay = SilentRay or {
     hooked = false,
     mouse = nil,
@@ -2616,31 +2442,25 @@ SilentRay = SilentRay or {
     lastSpoofReset = 0,
     cache = { cf = nil, origin = nil, pos = nil, target = nil, part = nil, t = 0 },
 }
-
 function SilentRay.modeOn()
     return false
 end
-
 function SilentRay.active()
     return SilentRay.modeOn() and SilentRay.hooked == true and not SilentRay.busy
 end
-
 function SilentRay.isMouseObj(self)
     if self == nil then return false end
     if self == SilentRay.mouse then return true end
     local ok, cn = pcall(function() return self.ClassName end)
     return ok and cn == "Mouse"
 end
-
 function SilentRay.isWorkspace(self)
     return self == S.Workspace or self == workspace
 end
-
 function SilentRay.silentFov()
     if Settings.Aimbot.SilentFOVOnly == false then return 400 end
     return tonumber(Settings.Aimbot.SilentFOVRadius) or getAimFOVRadius() or 180
 end
-
 function SilentRay.pickHitPart(target)
     local char = target and target.Character
     if not char then return nil end
@@ -2655,7 +2475,6 @@ function SilentRay.pickHitPart(target)
     end
     return nil
 end
-
 function SilentRay.getClosestHitPart()
     local cam = S.Workspace.CurrentCamera
     if not cam then return nil end
@@ -2700,7 +2519,6 @@ function SilentRay.getClosestHitPart()
     if bestPlr then currentTarget = bestPlr end
     return bestPart, bestPlr
 end
-
 function SilentRay.resolveShot()
     if SilentRay.busy then
         local c = SilentRay.cache
@@ -2729,13 +2547,11 @@ function SilentRay.resolveShot()
     if not ok or not part then return nil end
     return part, pos, cf, origin, target
 end
-
 function SilentRay.refreshTarget()
     local _, plr = SilentRay.getClosestHitPart()
     if plr then currentTarget = plr end
     return currentTarget
 end
-
 function SilentRay.updateCache()
     if not SilentRay.modeOn() then
         local c = SilentRay.cache
@@ -2744,14 +2560,12 @@ function SilentRay.updateCache()
     end
     SilentRay.resolveShot()
 end
-
 function SilentRay.getAimCached()
     local c = SilentRay.cache
     if not c or not c.part or not c.pos then return nil end
     if (tick() - (c.t or 0)) > 0.35 then return nil end
     return c.part, c.pos, c.cf, c.origin, c.target
 end
-
 function SilentRay.allowSpoof()
     local now = tick()
     if now - (SilentRay.lastSpoofReset or 0) > 2 then
@@ -2762,7 +2576,6 @@ function SilentRay.allowSpoof()
     SilentRay.spoofs = (SilentRay.spoofs or 0) + 1
     return true
 end
-
 function SilentRay.callerOk()
     if type(getcallingscript) ~= "function" then return true end
     local ok, scr = pcall(getcallingscript)
@@ -2770,12 +2583,11 @@ function SilentRay.callerOk()
     local name = ""
     pcall(function() name = string.lower(tostring(scr.Name)) end)
     if name == "" then return true end
-    -- Skip UI / core scripts that also raycast
+
     if name == "playermodule" or name == "cameramodule" or name == "controlmodule" then return false end
     if string.find(name, "camera", 1, true) or string.find(name, "animate", 1, true) then return false end
     return true
 end
-
 function SilentRay.startLoop()
     if SilentRay.loop then return end
     SilentRay.loop = S.RunService.Heartbeat:Connect(function()
@@ -2791,7 +2603,6 @@ function SilentRay.startLoop()
     end)
     table.insert(allConnections, SilentRay.loop)
 end
-
 function SilentRay.ensure()
     return false
 end
@@ -2801,20 +2612,17 @@ function SilentRay._ensureDisabled()
     if type(hookmetamethod) ~= "function" then return false end
     local okMouse, mouse = pcall(function() return player:GetMouse() end)
     if okMouse and mouse then SilentRay.mouse = mouse end
-
     local function safeCheckcaller()
         if type(checkcaller) ~= "function" then return false end
         local ok, v = pcall(checkcaller)
         return ok and v == true
     end
-
     local wrap = (WB and WB.wrap) or function(fn) return fn end
     local function dirTo(origin, dest, mag)
         local d = dest - origin
         if d.Magnitude < 0.001 then return Vector3.new(0, 0, -1) * (mag or 1000) end
         return d.Unit * (mag or 1000)
     end
-
     local oldIndex
     oldIndex = hookmetamethod(game, "__index", wrap(function(self, key)
         if SilentRay.busy then return oldIndex(self, key) end
@@ -2836,7 +2644,6 @@ function SilentRay._ensureDisabled()
         end
         return oldIndex(self, key)
     end))
-
     local oldNamecall
     oldNamecall = hookmetamethod(game, "__namecall", wrap(function(...)
         local args = { ... }
@@ -2846,7 +2653,6 @@ function SilentRay._ensureDisabled()
         end
         local method = (type(getnamecallmethod) == "function" and getnamecallmethod()) or ""
         local methodL = string.lower(tostring(method))
-
         if not safeCheckcaller() and SilentRay.active() and SilentRay.callerOk() and SilentRay.isWorkspace(self) then
             if methodL == "findpartonraywithignorelist"
                 or methodL == "findpartonraywithwhitelist"
@@ -2873,17 +2679,13 @@ function SilentRay._ensureDisabled()
         end
         return oldNamecall(unpack(args))
     end))
-
     SilentRay.hooked = true
     pcall(SilentRay.updateCache)
     return true
 end
-
 local function getPredictedPos(target)
-
     return SilentHB.predictPos(target)
 end
-
 local function startAimbotTracking()
     if rightMouseTracking then rightMouseTracking:Disconnect(); rightMouseTracking=nil end
     isTracking=true; currentTarget=getNearestTarget()
@@ -2923,7 +2725,6 @@ local function stopAimbotTracking()
     if rightMouseTracking then rightMouseTracking:Disconnect(); rightMouseTracking=nil end
     SilentHB.refresh()
 end
-
 local function simulateFirePress()
     if typeof(mouse1pressFn) == "function" then mouse1pressFn(); return true end
     local ok, vim = pcall(function() return game:GetService("VirtualInputManager") end)
@@ -2939,7 +2740,6 @@ local function simulateFirePress()
     pcall(function() vu:Button1Down(Vector2.new(0, 0)) end)
     return true
 end
-
 local function simulateFireRelease()
     if typeof(mouse1releaseFn) == "function" then mouse1releaseFn(); return true end
     local ok, vim = pcall(function() return game:GetService("VirtualInputManager") end)
@@ -2955,7 +2755,6 @@ local function simulateFireRelease()
     pcall(function() vu:Button1Up(Vector2.new(0, 0)) end)
     return true
 end
-
 local function simulateFireClick(holdTime)
     if typeof(mouse1clickFn) == "function" then mouse1clickFn(); return true end
     simulateFirePress()
@@ -2963,7 +2762,6 @@ local function simulateFireClick(holdTime)
     simulateFireRelease()
     return true
 end
-
 local function getCharacterFromPart(part)
     if not part then return nil, nil end
     local current = part
@@ -2976,7 +2774,6 @@ local function getCharacterFromPart(part)
     end
     return nil, nil
 end
-
 local function isTriggerEnemy(attacker, target)
     if not target or target == attacker then return false end
     if MW.isArsenal and getArsenalFFA() then return true end
@@ -2986,7 +2783,6 @@ local function isTriggerEnemy(attacker, target)
     end
     return isValidTarget(attacker, target)
 end
-
 local function isProtected(target)
     if not target then return true end
     local tc = target.Character
@@ -3000,9 +2796,7 @@ local function isProtected(target)
     if h.MaxHealth >= 999999 then return true end
     return false
 end
-
 local Trigger = { pressing = false, lastFire = 0, burstBusy = false }
-
 function Trigger.stopFire()
     if Trigger.pressing then
         Trigger.pressing = false
@@ -3010,7 +2804,6 @@ function Trigger.stopFire()
     end
     Trigger.burstBusy = false
 end
-
 function Trigger.isADS()
     if not Settings.Combat.TriggerRequireADS then return true end
     if S.UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then return true end
@@ -3031,7 +2824,6 @@ function Trigger.isADS()
     end
     return false
 end
-
 function Trigger.isBlacklisted()
     if TraceExpand and TraceExpand.WeaponFilter and TraceExpand.WeaponFilter.isDenied then
         if TraceExpand.WeaponFilter.isDenied() then return true end
@@ -3049,7 +2841,6 @@ function Trigger.isBlacklisted()
     end
     return false
 end
-
 function Trigger.resolve()
     local myChar = player.Character
     if not myChar then return nil end
@@ -3058,7 +2849,6 @@ function Trigger.resolve()
     if guiMainFrame and guiMainFrame.Visible then return nil end
     if not Trigger.isADS() then return nil end
     if Trigger.isBlacklisted() then return nil end
-
     local function validate(part)
         if not part then return nil end
         local char, hum = getCharacterFromPart(part)
@@ -3080,11 +2870,9 @@ function Trigger.resolve()
         if Settings.Combat.TriggerRequireLOS and not hasLOS(player, targetPlayer) then return nil end
         return targetPlayer
     end
-
     local mouse = player:GetMouse()
     local fromMouse = validate(mouse.Target)
     if fromMouse then return fromMouse end
-
     local cam = S.Workspace.CurrentCamera
     if not cam then return nil end
     local vp = cam.ViewportSize
@@ -3096,25 +2884,21 @@ function Trigger.resolve()
     if result then return validate(result.Instance) end
     return nil
 end
-
 function Trigger.run()
     if not Settings.Combat.TriggerBot or isUnloading or _G[MW_T.unloaded] then
         Trigger.stopFire()
         Trigger.lastFire = 0
         return
     end
-
     local targetPlayer = Trigger.resolve()
     local delay = (TraceCombatEx and TraceCombatEx.triggerDelay and TraceCombatEx.triggerDelay()) or math.max(0.03, Settings.Combat.TriggerDelay or 0.05)
     local burst = math.max(1, math.floor(Settings.Combat.TriggerBurstCount or 1))
     local gap = math.max(0.02, Settings.Combat.TriggerBurstGap or 0.06)
     local now = tick()
-
     if not targetPlayer then
         Trigger.stopFire()
         return
     end
-
     if burst <= 1 then
         if not Trigger.pressing then
             if now - Trigger.lastFire >= delay then
@@ -3128,7 +2912,6 @@ function Trigger.run()
         end
         return
     end
-
     if Trigger.pressing then
         Trigger.pressing = false
         pcall(simulateFireRelease)
@@ -3147,7 +2930,6 @@ function Trigger.run()
         Trigger.burstBusy = false
     end)
 end
-
 local function getESPBoxStyle()
     local mode = Settings.ESP.BoxStyle
     if not mode or mode == "" then
@@ -3155,7 +2937,6 @@ local function getESPBoxStyle()
     end
     return mode
 end
-
 local function destroyESPData(d)
     if not d then return end
     if d.billboard then pcall(function() d.billboard:Destroy() end) end
@@ -3164,7 +2945,6 @@ local function destroyESPData(d)
     if d.box3DOutline then pcall(function() d.box3DOutline:Destroy() end) end
     if d.box3D then pcall(function() d.box3D:Destroy() end) end
 end
-
 local function purgeWorldESP()
     for _, p in ipairs(S.Players:GetPlayers()) do
         local tc = p.Character
@@ -3177,7 +2957,6 @@ local function purgeWorldESP()
         end
     end
 end
-
 local function clearAllESP()
     for uid, d in pairs(espObjects) do
         destroyESPData(d)
@@ -3189,13 +2968,11 @@ local function clearAllESP()
     if overlayResetFn then pcall(overlayResetFn) end
     if destroyTargetHLFn then pcall(destroyTargetHLFn) end
 end
-
 local function getCharacter2DBounds(char, cam, useFast)
     if not char or not cam then return nil end
     local minX, minY = math.huge, math.huge
     local maxX, maxY = -math.huge, -math.huge
     local any = false
-
     local function addPoint(wp)
         local sp = cam:WorldToViewportPoint(wp)
         if sp.Z > 0 then
@@ -3206,7 +2983,6 @@ local function getCharacter2DBounds(char, cam, useFast)
             maxY = math.max(maxY, sp.Y)
         end
     end
-
     if useFast then
         local head = char:FindFirstChild("Head")
         local hrp = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("Torso")
@@ -3231,7 +3007,6 @@ local function getCharacter2DBounds(char, cam, useFast)
             end
         end
     end
-
     if not any then
         for _, part in ipairs(char:GetChildren()) do
             if part:IsA("BasePart") then
@@ -3242,7 +3017,6 @@ local function getCharacter2DBounds(char, cam, useFast)
             end
         end
     end
-
     if not any then
         local ok, bbCF, bbSize = pcall(function() return char:GetBoundingBox() end)
         if ok and bbCF and bbSize then
@@ -3250,13 +3024,10 @@ local function getCharacter2DBounds(char, cam, useFast)
             addPoint(bbCF:PointToWorldSpace(Vector3.new(0, -bbSize.Y * 0.5, 0)))
         end
     end
-
     if minX == math.huge then return nil end
-
     local pad = useFast and 4 or 3
     return minX - pad, minY - pad, maxX + pad, maxY + pad
 end
-
 local function smoothESPBounds(uid, minX, minY, maxX, maxY)
     if UILib.espBoundsInstant() then
         espBoundsCache[uid] = {minX = minX, minY = minY, maxX = maxX, maxY = maxY}
@@ -3274,7 +3045,6 @@ local function smoothESPBounds(uid, minX, minY, maxX, maxY)
     cached.maxY = cached.maxY + (maxY - cached.maxY) * blend
     return cached.minX, cached.minY, cached.maxX, cached.maxY
 end
-
 local function getBillboardStudsOffset(char, hrp)
     if not char or not hrp then return Vector3.new(0, 2.2, 0) end
     local yOff = (Settings.ESP.Offset or 0) * 0.1
@@ -3286,7 +3056,6 @@ local function getBillboardStudsOffset(char, hrp)
     end
     return Vector3.new(0, 2.2 + yOff, 0)
 end
-
 local function resolveEspModel(char)
     if typeof(char) == "Instance" then return char end
     if type(char) == "table" then
@@ -3297,7 +3066,6 @@ local function resolveEspModel(char)
     end
     return nil
 end
-
 local function updateBox3D(data, char, col)
     if not data or not char then return end
     local model = resolveEspModel(char) or char
@@ -3333,7 +3101,6 @@ local function updateBox3D(data, char, col)
     data.box3D.Transparency = 0.84
     data.box3D.Visible = true
     data.box3D.Parent = char
-
     data.box3DOutline.Adornee = char
     data.box3DOutline.Parent = char
     data.box3DOutline.FillTransparency = 1
@@ -3341,7 +3108,6 @@ local function updateBox3D(data, char, col)
     data.box3DOutline.OutlineColor = col
     data.box3DOutline.Enabled = true
 end
-
 local function hideBox3D(data)
     if data and data.box3D then
         data.box3D.Visible = false
@@ -3352,7 +3118,6 @@ local function hideBox3D(data)
         pcall(function() data.box3DOutline.Parent = nil end)
     end
 end
-
 local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
     mode = mode or "all"
     local fontSize = Settings.ESP.FontSize or 11
@@ -3361,7 +3126,6 @@ local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
     local compact = Settings.ESP.CompactLabels ~= false
     local fade = getESPLabelFade(dist)
     local strokeTr = compact and 0.42 or 0.22
-
     if mode == "labels" or mode == "all" then
         if d.nameLabel then
             local showName = Settings.ESP.NameEnabled and fade < 0.7
@@ -3380,7 +3144,6 @@ local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
                 end
             end
         end
-
         if d.metaLabel then
             local metaText = buildESPMetaText(dist, hp, maxhp)
             local showMeta = metaText ~= "" and fade < 0.55
@@ -3400,7 +3163,6 @@ local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
                 end
             end
         end
-
         if d.weaponLabel then
             local wpnMax = tonumber(Settings.ESP.WeaponLabelDistance) or 450
             local weaponName = (Settings.ESP.WeaponLabels and dist <= wpnMax) and getPlayerWeaponName(target) or nil
@@ -3420,11 +3182,9 @@ local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
                 end
             end
         end
-
         if d.distLabel then d.distLabel.Visible = false end
         if d.healthLabel then d.healthLabel.Visible = false end
     end
-
     if mode == "chams" or mode == "all" then
         local chamsOn = Settings.ESP.ChamsEnabled and not VisPerf.lockChams
         local outlineOn = Settings.ESP.OutlineEnabled and not VisPerf.lockChams
@@ -3472,14 +3232,13 @@ local function applyESPPlayerVisuals(d, target, tc, hp, maxhp, dist, col, mode)
             d.boxHighlight.Enabled = false
             pcall(function() d.boxHighlight.Adornee = nil end)
         end
-        -- Kill legacy stacked glow highlight (looked muddy)
+
         if d.glowHighlight then
             pcall(function() d.glowHighlight:Destroy() end)
             d.glowHighlight = nil
         end
     end
 end
-
 local function hideESPVisuals(d)
     if not d then return end
     if d.billboard then d.billboard.Enabled = false end
@@ -3487,17 +3246,14 @@ local function hideESPVisuals(d)
     if d.glowHighlight then d.glowHighlight.Enabled = false; pcall(function() d.glowHighlight.Parent = nil end) end
     hideBox3D(d)
 end
-
 local function createESP(target)
     if espObjects[target.UserId] then return end
     if target == player and not Settings.ESP.SelfESP then return end
-
     local fontSize = Settings.ESP.FontSize or 11
     local subSize = math.max(9, fontSize - 2)
     local data = {}
     local bbH = fontSize + subSize + 8
     if Settings.ESP.WeaponLabels then bbH = bbH + subSize + 2 end
-
     local bb = Instance.new("BillboardGui")
     bb.Name = MW_T.esp
     bb.AlwaysOnTop = true
@@ -3507,7 +3263,6 @@ local function createESP(target)
     bb.MaxDistance = Settings.ESP.RenderDistance or 8000
     bb.ResetOnSpawn = false
     bb.ClipsDescendants = false
-
     local nl = UILib.newLabel(bb, {
         Name = MW_T.next(6),
         Size = UDim2.new(1, 0, 0, fontSize + 2),
@@ -3520,7 +3275,6 @@ local function createESP(target)
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Center,
     })
-
     local ml = UILib.newLabel(bb, {
         Name = MW_T.next(6),
         Size = UDim2.new(1, 0, 0, subSize + 2),
@@ -3533,7 +3287,6 @@ local function createESP(target)
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Center,
     })
-
     local wl = UILib.newLabel(bb, {
         Name = MW_T.next(6),
         Size = UDim2.new(1, 0, 0, subSize + 2),
@@ -3547,7 +3300,6 @@ local function createESP(target)
         TextXAlignment = Enum.TextXAlignment.Center,
         Visible = false,
     })
-
     data.billboard = bb
     data.nameLabel = nl
     data.metaLabel = ml
@@ -3564,14 +3316,12 @@ local function createESP(target)
     end
     espObjects[target.UserId] = data
 end
-
 local function removeESP(target)
     local d = espObjects[target.UserId]
     if d then destroyESPData(d); espObjects[target.UserId] = nil end
     espBoundsCache[target.UserId] = nil
     espLosCache[target.UserId] = nil
 end
-
 local thumbCache = {}
 local function getPlayerThumb(userId)
     if thumbCache[userId] and thumbCache[userId] ~= "" then return thumbCache[userId] end
@@ -3586,7 +3336,6 @@ local function getPlayerThumb(userId)
     end
     return thumbCache[userId]
 end
-
 local origFog=nil
 local function enableNoFog()
     if not origFog then origFog={FogStart=S.Lighting.FogStart,FogEnd=S.Lighting.FogEnd,FogColor=S.Lighting.FogColor,Atm={}}; for _,e in ipairs(S.Lighting:GetChildren()) do if e:IsA("Atmosphere") then table.insert(origFog.Atm,{inst=e,Density=e.Density,Offset=e.Offset,Color=e.Color,Decay=e.Decay,Glare=e.Glare,Haze=e.Haze}) end end end
@@ -3595,7 +3344,6 @@ end
 local function disableNoFog()
     if origFog then S.Lighting.FogStart=origFog.FogStart; S.Lighting.FogEnd=origFog.FogEnd; S.Lighting.FogColor=origFog.FogColor; for _,d in ipairs(origFog.Atm) do if d.inst and d.inst.Parent then d.inst.Density=d.Density; d.inst.Offset=d.Offset; d.inst.Color=d.Color; d.inst.Decay=d.Decay; d.inst.Glare=d.Glare; d.inst.Haze=d.Haze end end end
 end
-
 local origLighting = nil
 local function captureOrigLighting()
     if not origLighting then
@@ -3618,7 +3366,6 @@ local function restoreWorldLighting()
         S.Lighting.ExposureCompensation = origLighting.ExposureCompensation
     end
 end
-
 local gunOrig={FireRate={},ReloadTime={},EReloadTime={},Auto={},Spread={},Recoil={},Penetration={}}
 local weaponCache={}; local weaponCacheBuilt=false
 WB = {
@@ -3636,7 +3383,6 @@ WB.paths = { weapons=nil, events=nil, playersFolder=nil, lastScan=0 }
 WB.status = { weapons="pending", hooks="pending", lastMsg="" }
 WB._weaponDescConn = nil
 WB._lastReport = {}
-
 function WB.report(feature, ok, msg)
     local key = tostring(feature or "")
     local state = ok and "ok" or "fail"
@@ -3649,11 +3395,9 @@ function WB.report(feature, ok, msg)
     WB.status.lastMsg = tostring(msg or "")
     sendNotification(key, tostring(msg or (ok and "ok" or "failed")), 2.5)
 end
-
 function WB.scanPaths()
     local rs = game:GetService("ReplicatedStorage")
     WB.paths.lastScan = tick()
-
     local folderHints = {
         weapons = true, gundata = true, weapondata = true, guns = true,
         items = true, toolstorage = true, gunstorage = true, inventory = true,
@@ -3667,7 +3411,6 @@ function WB.scanPaths()
         piercing = true, ammo = true, ammocount = true, clipsize = true,
         magazinesize = true, damage = true, range = true,
     }
-
     local function scoreContainer(folder)
         if not folder then return 0 end
         local score = 0
@@ -3690,7 +3433,6 @@ function WB.scanPaths()
         end
         return score
     end
-
     local roots = { rs }
     pcall(function()
         table.insert(roots, game:GetService("ReplicatedFirst"))
@@ -3701,14 +3443,13 @@ function WB.scanPaths()
     pcall(function()
         table.insert(roots, game:GetService("StarterGui"))
     end)
-    -- Workspace bags some games keep gun configs in
+
     pcall(function()
         for _, name in ipairs({ "Weapons", "Guns", "Items", "Tools", "Ignore", "Ignored" }) do
             local f = S.Workspace:FindFirstChild(name)
             if f then table.insert(roots, f) end
         end
     end)
-
     local found, bestScore = nil, 0
     for _, root in ipairs(roots) do
         local childrenOk, children = pcall(function() return root:GetChildren() end)
@@ -3728,7 +3469,6 @@ function WB.scanPaths()
             end
         end
     end
-
     WB.paths.weapons = found
     local ev = rs:FindFirstChild("Events") or rs:FindFirstChild("events")
         or rs:FindFirstChild("Remotes") or rs:FindFirstChild("remotes")
@@ -3737,7 +3477,6 @@ function WB.scanPaths()
         or rs:FindFirstChild("PlayerData") or rs:FindFirstChild("playerdata")
     WB.paths.playersFolder = pf
 
-    -- Universal world scan: map / ignore / characters for LOS & ESP helpers
     WB.paths.map = S.Workspace:FindFirstChild("Map")
         or S.Workspace:FindFirstChild("map")
         or S.Workspace:FindFirstChild("Arena")
@@ -3767,15 +3506,12 @@ function WB.scanPaths()
             end
         end
     end
-
     return found
 end
-
 function WB.resolveWeapons()
     if WB.paths.weapons and WB.paths.weapons.Parent then return WB.paths.weapons end
     return WB.scanPaths()
 end
-
 function WB.wrap(fn)
     if type(newcclosure) == "function" then
         local ok, wrapped = pcall(newcclosure, fn)
@@ -3829,8 +3565,7 @@ function WB.setPartQuery(part, penetrate)
         end
         pcall(function()
             part.CanQuery = false
-            -- Clips folder parts are bullet blockers; kill collide too.
-            -- Map parts keep CanCollide so you can still walk.
+
             local clips = S.Workspace:FindFirstChild("Clips")
             if clips and part:IsDescendantOf(clips) then
                 part.CanCollide = false
@@ -3889,7 +3624,6 @@ function WB.refreshMapQuery()
         end
     end))
 end
-
 local function applyGunMod(v)
     if MW.gunModsInTesting then return end
     if not Cap.ok("gunmods") then return end
@@ -3905,7 +3639,7 @@ local function buildWeaponCache()
     weaponCache={}
     local wp=WB.resolveWeapons()
     if not wp then
-        -- Universal fallback: scan every player's tools + backpack for ValueBases
+
         local valueNames = {
             ReloadTime=true, EReloadTime=true, FireRate=true, BFireRate=true,
             Auto=true, AutoFire=true, Automatic=true, AutoShoot=true, AutoGun=true,
@@ -3965,7 +3699,6 @@ pcall(function()
         end)
     end
 end)
-
 local AcsGuns
 AcsGuns = {
     orig = {},
@@ -3977,7 +3710,6 @@ do
         if type(item) ~= "table" then return false end
         return rawget(item, "ShootRate") ~= nil and rawget(item, "Ammo") ~= nil and rawget(item, "MinSpread") ~= nil
     end
-
     local function equippedToolNames()
         local names = {}
         local char = player.Character
@@ -3994,7 +3726,6 @@ do
         end
         return names
     end
-
     local function remember(item)
         if not item or AcsGuns.orig[item] then return end
         local snap = {
@@ -4023,7 +3754,6 @@ do
         end
         AcsGuns.orig[item] = snap
     end
-
     local function applyOne(item)
         if not item then return end
         remember(item)
@@ -4081,7 +3811,6 @@ do
             if item.StoredAmmo ~= nil then item.StoredAmmo = math.min(stored, mag * 6) end
         end
     end
-
     local function collect()
         local tools = equippedToolNames()
         local out, seen = {}, {}
@@ -4106,7 +3835,6 @@ do
         for _, item in ipairs(AcsGuns.gcCache) do add(item) end
         return out
     end
-
     function AcsGuns.patch()
         if MW.gunModsInTesting then return end
         if not Cap.ok("gunmods") then return end
@@ -4117,7 +3845,6 @@ do
             pcall(applyOne, item)
         end
     end
-
     function AcsGuns.maintainAmmo()
         if MW.gunModsInTesting then return end
         if not Cap.ok("gunmods") or not Settings.Combat.InfiniteAmmo then return end
@@ -4134,7 +3861,6 @@ do
         end
     end
 end
-
 function UILib.mountGunModsTestingOverlay()
     if not MW.gunModsInTesting then return nil end
     if UILib._gunModsTestGui and UILib._gunModsTestGui.Parent then
@@ -4153,7 +3879,6 @@ function UILib.mountGunModsTestingOverlay()
         elseif protectgui then protectgui(sg) end
     end)
     sg.Parent = (gethui and gethui()) or pg
-
     local badge = Instance.new("Frame")
     badge.Name = "Badge"
     badge.AnchorPoint = Vector2.new(0.5, 0)
@@ -4183,14 +3908,12 @@ function UILib.mountGunModsTestingOverlay()
     title.TextColor3 = Color3.fromRGB(245, 245, 245)
     title.Text = "GUN MODS  ·  IN TESTING"
     title.Parent = badge
-
     UILib._gunModsTestGui = sg
     table.insert(allConnections, sg.Destroying:Connect(function()
         if UILib._gunModsTestGui == sg then UILib._gunModsTestGui = nil end
     end))
     return sg
 end
-
 local function applyAllGunMods()
     if MW.gunModsInTesting then return end
     if not Cap.ok("gunmods") then return end
@@ -4200,26 +3923,22 @@ local function applyAllGunMods()
         pcall(AcsGuns.patch)
     end
 end
-
 local function restoreGunMod(cat)
     for obj, val in pairs(gunOrig[cat]) do
         pcall(function() if obj and obj.Parent then obj.Value = val end end)
     end
     gunOrig[cat] = {}
 end
-
 function WB.ensureHook()
     WB.status.hooks = "removed"
     return false
 end
-
 function WB.setEnabled(_on)
     Settings.Combat.WallBang = false
     pcall(function() restoreGunMod("Penetration") end)
     pcall(function() WB.clearMapQuery() end)
     return false
 end
-
 local infiniteAmmoCurseOwned = false
 local function applyInfiniteAmmo()
     if MW.gunModsInTesting then return end
@@ -4255,7 +3974,6 @@ local function stopInfiniteAmmo()
         infiniteAmmoCurseOwned = false
     end)
 end
-
 local function startFly()
     if MW.allows("fly") == false then
         Settings.Movement.Fly = false
@@ -4271,7 +3989,6 @@ local function startFly()
     if flyBodyVelocity then pcall(function() flyBodyVelocity:Destroy() end); flyBodyVelocity = nil end
     if flyBodyGyro then pcall(function() flyBodyGyro:Destroy() end); flyBodyGyro = nil end
     if flyRenderConn then flyRenderConn:Disconnect(); flyRenderConn = nil end
-
     local method = Settings.Movement.FlyMethod or "CFrame"
     if method == "BodyMovers" then
         flyBodyVelocity = Instance.new("BodyVelocity")
@@ -4285,7 +4002,6 @@ local function startFly()
         flyBodyGyro.P = 10000
         flyBodyGyro.Parent = hrp
     end
-
     flyRenderConn = S.RunService.RenderStepped:Connect(function(dt)
         if isUnloading or _G[MW_T.unloaded] or not Settings.Movement.Fly or not isFlying then return end
         local c = player.Character
@@ -4306,7 +4022,6 @@ local function startFly()
         if uis:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0, 1, 0) end
         if uis:IsKeyDown(Enum.KeyCode.LeftControl) or uis:IsKeyDown(Enum.KeyCode.LeftShift) then dir = dir - Vector3.new(0, 1, 0) end
         if dir.Magnitude > 0 then dir = dir.Unit end
-
         if mode == "Velocity" then
             h.PlatformStand = false
             root.AssemblyLinearVelocity = dir * spd
@@ -4338,7 +4053,6 @@ local function startFly()
         end
     end)
 end
-
 local function stopFly()
     isFlying = false
     if flyRenderConn then flyRenderConn:Disconnect(); flyRenderConn = nil end
@@ -4350,9 +4064,6 @@ local function stopFly()
     if flyBodyVelocity then pcall(function() flyBodyVelocity:Destroy() end); flyBodyVelocity = nil end
     if flyBodyGyro then pcall(function() flyBodyGyro:Destroy() end); flyBodyGyro = nil end
 end
-
-
--- Own function so these locals do not count toward the parent register cap.
 local UnivKit = {}
 ;(function()
     local noclipConn, noclipParts = nil, {}
@@ -4361,13 +4072,11 @@ local UnivKit = {}
     local autoObbyRunning = false
     local checkpointCache = {}
     local bhLocationCache = {}
-
     local function getHRP()
         local c = player.Character
         if not c then return nil end
         return c:FindFirstChild("HumanoidRootPart"), c:FindFirstChildOfClass("Humanoid"), c
     end
-
     local function stopNoclip()
         if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
         for part, was in pairs(noclipParts) do
@@ -4375,7 +4084,6 @@ local UnivKit = {}
         end
         noclipParts = {}
     end
-
     local function startNoclip()
         stopNoclip()
         Settings.Movement.Noclip = true
@@ -4391,16 +4099,13 @@ local UnivKit = {}
             end
         end)
     end
-
     function UnivKit.setNoclip(on)
         Settings.Movement.Noclip = on and true or false
         if on then startNoclip() else stopNoclip() end
     end
-
     local function stopInfiniteJump()
         if infJumpConn then infJumpConn:Disconnect(); infJumpConn = nil end
     end
-
     function UnivKit.setInfiniteJump(on)
         if on and MW.guard("pos") then
             Settings.Movement.InfiniteJump = false
@@ -4416,11 +4121,9 @@ local UnivKit = {}
             if hum then pcall(function() hum:ChangeState(Enum.HumanoidStateType.Jumping) end) end
         end)
     end
-
     local function stopClickTP()
         if clickTpConn then clickTpConn:Disconnect(); clickTpConn = nil end
     end
-
     function UnivKit.setClickTP(on)
         if on and (MW.guard("pos") or MW.allows("clickTp") == false) then
             Settings.Movement.ClickTP = false
@@ -4443,11 +4146,9 @@ local UnivKit = {}
             end
         end)
     end
-
     local function stopVehicleSpeed()
         if vehicleConn then vehicleConn:Disconnect(); vehicleConn = nil end
     end
-
     function UnivKit.setVehicleSpeed(on)
         Settings.Movement.VehicleSpeed = on and true or false
         stopVehicleSpeed()
@@ -4474,7 +4175,6 @@ local UnivKit = {}
             end)
         end)
     end
-
     local function clearLocalInvis()
         for part, t0 in pairs(localInvisParts) do
             pcall(function()
@@ -4488,7 +4188,6 @@ local UnivKit = {}
         end
         localInvisParts = {}
     end
-
     function UnivKit.applyLocalInvis(on)
         Settings.Movement.LocalInvis = on and true or false
         clearLocalInvis()
@@ -4505,7 +4204,6 @@ local UnivKit = {}
             end
         end
     end
-
     local function checkpointScore(name)
         local n = string.lower(tostring(name or ""))
         local num = tonumber(n:match("(%d+)"))
@@ -4518,7 +4216,6 @@ local UnivKit = {}
         end
         return false, 0
     end
-
     function UnivKit.scanCheckpoints()
         checkpointCache = {}
         local roots = { S.Workspace }
@@ -4553,7 +4250,6 @@ local UnivKit = {}
         end)
         return checkpointCache
     end
-
     local function tpToPart(part)
         local hrp = select(1, getHRP())
         if not hrp or not part then return false end
@@ -4561,12 +4257,10 @@ local UnivKit = {}
             hrp.CFrame = CFrame.new(part.Position + Vector3.new(0, 4, 0))
         end)
     end
-
     function UnivKit.stopAutoObby()
         autoObbyRunning = false
         Settings.Misc.AutoObby = false
     end
-
     function UnivKit.startAutoObby()
         if autoObbyRunning then return end
         Settings.Misc.AutoObby = true
@@ -4598,7 +4292,6 @@ local UnivKit = {}
             autoObbyRunning = false
         end)
     end
-
     function UnivKit.tpNextCheckpoint()
         local list = (#checkpointCache > 0) and checkpointCache or UnivKit.scanCheckpoints()
         if #list == 0 then sendNotification("Checkpoints", "None found", 2); return end
@@ -4612,7 +4305,6 @@ local UnivKit = {}
         local target = list[math.min(nearestIdx + 1, #list)] or list[1]
         if tpToPart(target.part) then sendNotification("Checkpoint", target.name, 1.5) end
     end
-
     function UnivKit.tpToSpawn()
         local best = nil
         local ok, descendants = pcall(function() return S.Workspace:GetDescendants() end)
@@ -4629,13 +4321,11 @@ local UnivKit = {}
             sendNotification("Spawn", "Respawned", 1.5)
         end
     end
-
     UnivKit.BH_LOCATIONS = {
         "Airport", "Hospital", "School", "Mall", "Bank", "Police", "Motel",
         "Burger Barn", "Church", "Fire", "Gas", "Cafe", "Apartment",
         "Town Hall", "Park", "Beach", "Gym", "Museum", "Post Office",
     }
-
     local function resolveBrookhavenLocation(label)
         if bhLocationCache[label] and bhLocationCache[label].Parent then return bhLocationCache[label] end
         local needle = string.lower(label:gsub("%s+", ""))
@@ -4660,7 +4350,6 @@ local UnivKit = {}
         if best then bhLocationCache[label] = best end
         return best
     end
-
     function UnivKit.tpBrookhavenLocation(label)
         local part = resolveBrookhavenLocation(label)
         if part and tpToPart(part) then
@@ -4670,7 +4359,6 @@ local UnivKit = {}
         sendNotification("Brookhaven", "Location not found: " .. label, 2)
         return false
     end
-
     function UnivKit.bringPlayerByName(name)
         local me = select(1, getHRP())
         if not me then return false end
@@ -4687,7 +4375,6 @@ local UnivKit = {}
         sendNotification("Bring", "Player not found", 2)
         return false
     end
-
     function UnivKit.tpToPlayerByName(name)
         local me = select(1, getHRP())
         if not me then return false end
@@ -4704,14 +4391,12 @@ local UnivKit = {}
         sendNotification("TP", "Player not found", 2)
         return false
     end
-
     function UnivKit.forceSit(on)
         local _, hum = getHRP()
         if not hum then return end
         if on then pcall(function() hum.Sit = true end)
         else pcall(function() hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping) end) end
     end
-
     function UnivKit.stopUniversalKits()
         stopNoclip(); UnivKit.setInfiniteJump(false); UnivKit.setClickTP(false); stopVehicleSpeed()
         clearLocalInvis(); UnivKit.stopAutoObby()
@@ -4722,7 +4407,6 @@ local UnivKit = {}
         Settings.Movement.LocalInvis = false
     end
 end)()
-
 local autoTPTarget=nil; local autoTPRunning=false
 local function getNextTPTarget()
     local myChar=player.Character; if not myChar then return nil end; local myHRP=myChar:FindFirstChild("HumanoidRootPart"); if not myHRP then return nil end
@@ -4782,8 +4466,6 @@ local function startAutoTPLoop()
     end)
 end
 local function stopAutoTPLoop() Settings.Misc.AutoTPLoop=false; autoTPRunning=false; autoTPTarget=nil end
-
--- Webhooks / hop / AC (table methods avoid Luau local-register pressure)
 local FX = {
     session = { kills = 0, deaths = 0, wins = 0, started = tick() },
     lastKillAt = 0,
@@ -4793,7 +4475,6 @@ local FX = {
     hopBusy = false,
     acHooked = false,
 }
-
 function FX.normalizeWebhookUrl(url)
     url = tostring(url or ""):gsub("^%s+", ""):gsub("%s+$", "")
     if url == "" then return nil end
@@ -4802,12 +4483,10 @@ function FX.normalizeWebhookUrl(url)
     end
     return url
 end
-
 function FX.ensureHooks()
     ensureUISettings()
     if type(Settings.Webhook.Hooks) ~= "table" then Settings.Webhook.Hooks = {} end
 end
-
 function FX.addHook(url)
     FX.ensureHooks()
     url = FX.normalizeWebhookUrl(url)
@@ -4825,7 +4504,6 @@ function FX.addHook(url)
     })
     return true
 end
-
 function FX.removeHook(url)
     FX.ensureHooks()
     for i, h in ipairs(Settings.Webhook.Hooks) do
@@ -4836,7 +4514,6 @@ function FX.removeHook(url)
     end
     return false
 end
-
 function FX.sendPayload(payload, channel)
     FX.ensureHooks()
     local ch = tostring(channel or "")
@@ -4870,13 +4547,11 @@ function FX.sendPayload(payload, channel)
     end
     return sent
 end
-
 function FX.kdText()
     local k, d = FX.session.kills, FX.session.deaths
     local ratio = d <= 0 and k or (math.floor((k / d) * 100 + 0.5) / 100)
     return string.format("%d / %d (%.2f)", k, d, ratio)
 end
-
 function FX.embed(title, description, color)
     return {
         username = MW.hub,
@@ -4889,7 +4564,6 @@ function FX.embed(title, description, color)
         }},
     }
 end
-
 function FX.onKill(victimName, weapon)
     local now = tick()
     if now - FX.lastKillAt < 0.15 then return end
@@ -4908,14 +4582,12 @@ function FX.onKill(victimName, weapon)
     FX.sendPayload(FX.embed("Kill", desc, 15158332), "Kills")
     FX.sendPayload(FX.embed("Session K/D", "**" .. FX.kdText() .. "**", 3447003), "KD")
 end
-
 function FX.onDeath()
     FX.session.deaths = FX.session.deaths + 1
     if Settings.Webhook.Enabled then
         FX.sendPayload(FX.embed("Death", "Session K/D: **" .. FX.kdText() .. "**", 10070709), "KD")
     end
 end
-
 function FX.onWin(detail)
     local now = tick()
     if now - FX.lastWinAt < 8 then return end
@@ -4924,7 +4596,6 @@ function FX.onWin(detail)
     if not Settings.Webhook.Enabled then return end
     FX.sendPayload(FX.embed("Win", tostring(detail or "Round win") .. "\n**Session wins:** " .. FX.session.wins .. "\n**K/D:** " .. FX.kdText(), 5763719), "Wins")
 end
-
 function FX.onAntiCheat(reason)
     if Settings.Misc.AntiCheatAlerts == false then return end
     local now = tick()
@@ -4935,7 +4606,6 @@ function FX.onAntiCheat(reason)
         FX.sendPayload(FX.embed("Anti-Cheat Alert", "**Reason:** " .. tostring(reason or "unknown") .. "\n**Place:** " .. tostring(game.PlaceId) .. "\n**Job:** `" .. tostring(game.JobId) .. "`", 15105570), "AntiCheat")
     end
 end
-
 function FX.onLobby(detail)
     if Settings.Misc.LobbyAlertOnJoin == false then return end
     local now = tick()
@@ -4948,7 +4618,6 @@ function FX.onLobby(detail)
         FX.sendPayload(FX.embed("Lobby Alert", msg, 15844367), "Lobby")
     end
 end
-
 function FX.doServerHop(opts)
     opts = opts or {}
     if not Cap.ok("http") then
@@ -4998,7 +4667,6 @@ function FX.doServerHop(opts)
         FX.hopBusy = false
     end)
 end
-
 function FX.startLobbyFinder()
     if FX.hopBusy then return end
     task.spawn(function()
@@ -5019,11 +4687,10 @@ function FX.startLobbyFinder()
         Settings.Misc.AutoHopUntilMatch = false
     end)
 end
-
 function FX.hookAntiCheat()
     if FX.acHooked then return end
     FX.acHooked = true
-    -- GuiService.ErrorMessage was removed; only use the signal payload when present.
+
     pcall(function()
         local gui = game:GetService("GuiService")
         local sig = gui.ErrorMessageChanged
@@ -5088,8 +4755,6 @@ function FX.hookAntiCheat()
         end
     end)
 end
-
--- Arsenal custom chat (not TextChatService / default Roblox chat)
 function FX.isLocalDead()
     local char = player.Character
     if not char then return true end
@@ -5100,7 +4765,6 @@ function FX.isLocalDead()
     if hv and typeof(hv.Value) == "number" then return hv.Value <= 0 end
     return false
 end
-
 function FX.resolveChatRemote()
     local rs = game:GetService("ReplicatedStorage")
     local folders = {
@@ -5142,7 +4806,6 @@ function FX.resolveChatRemote()
     end
     return nil, nil
 end
-
 function FX.sendChat(msg, teamOnly)
     msg = tostring(msg or "")
     if msg == "" then return false end
@@ -5179,21 +4842,18 @@ function FX.sendChat(msg, teamOnly)
         if g then g:SendAsync(msg) end
     end)
 end
-
 local Throw = {}
 ;(function()
 local THROWABLE_KEYWORDS = {"grenade", "knife", "frag", "molotov", "flash", "projectile", "throw", "bomb", "dynamite", "snowball", "slingshot"}
 local throwableHighlights = {}
 local throwableScanList = {}
 local lastThrowableScan = 0
-
 local function clearThrowableESP()
     for id, h in pairs(throwableHighlights) do
         pcall(function() h:Destroy() end)
         throwableHighlights[id] = nil
     end
 end
-
 local function isThrowableObject(obj)
     if not obj then return false end
     local nl = obj.Name:lower()
@@ -5202,7 +4862,6 @@ local function isThrowableObject(obj)
     end
     return false
 end
-
 local function scanThrowables()
     throwableScanList = {}
     local ok, descendants = pcall(function() return S.Workspace:GetDescendants() end)
@@ -5221,7 +4880,6 @@ local function scanThrowables()
         end
     end
 end
-
 local function updateThrowableESP(myPos)
     if not Settings.ESP.ThrowableEnabled then
         clearThrowableESP()
@@ -5266,21 +4924,17 @@ local function updateThrowableESP(myPos)
         end
     end
 end
-
 local function isThrowableTool(tool)
     return tool and tool:IsA("Tool") and isThrowableObject(tool)
 end
-
 local arcFolder, arcPool = nil, {}
 local _arcRP = RaycastParams.new()
 _arcRP.FilterType = Enum.RaycastFilterType.Exclude
-
 local function clearThrowableArcPreview()
     for _, part in ipairs(arcPool) do
         pcall(function() part.Transparency = 1 end)
     end
 end
-
 local function getArcMarker(i)
     if not arcFolder or not arcFolder.Parent then
         arcFolder = Instance.new("Folder")
@@ -5302,7 +4956,6 @@ local function getArcMarker(i)
     end
     return arcPool[i]
 end
-
 local function updateThrowableArcPreview()
     if not Settings.ESP.ThrowableArcPreview then
         clearThrowableArcPreview()
@@ -5346,18 +4999,14 @@ local function updateThrowableArcPreview()
         pcall(function() arcPool[i].Transparency = 1 end)
     end
 end
-
 Throw.clearThrowableESP = clearThrowableESP
 Throw.updateThrowableESP = updateThrowableESP
 Throw.clearThrowableArcPreview = clearThrowableArcPreview
 Throw.updateThrowableArcPreview = updateThrowableArcPreview
 end)()
-
 local origCameraType = nil
 local autoRejoinBusy = false
-
 local VisCam = {}
-
 function VisCam.applyThirdPerson()
     local cam = S.Workspace.CurrentCamera
     local char = player.Character
@@ -5381,7 +5030,6 @@ function VisCam.applyThirdPerson()
         origCameraType = nil
     end
 end
-
 function VisCam.applyViewmodelSettings()
     local char = player.Character
     if not char then return end
@@ -5391,7 +5039,6 @@ function VisCam.applyViewmodelSettings()
         hum.CameraOffset = Vector3.new(0, yOff, 0)
     end
 end
-
 function VisCam.applyViewmodelTweaks()
     local cam = S.Workspace.CurrentCamera
     local char = player.Character
@@ -5403,7 +5050,6 @@ function VisCam.applyViewmodelTweaks()
         end
     end
 end
-
 local updateGunWireframe, clearGunWireframe
 updateGunWireframe, clearGunWireframe = (function()
     local GUN_WIRE_COLORS = {
@@ -5414,19 +5060,16 @@ updateGunWireframe, clearGunWireframe = (function()
         White = function() return Color3.fromRGB(248, 250, 255) end,
         Red = function() return Color3.fromRGB(255, 55, 55) end,
     }
-
     local gunWireOrig = {}
     local gunWireHighlights = {}
     local gunWireBoxes = {}
     local gunWireGlow = {}
     local gunWireFolder = nil
-
     local function getGunWireframeColor()
         local preset = Settings.Visuals.GunWireframeColorPreset or "Accent"
         local fn = GUN_WIRE_COLORS[preset]
         return fn and fn() or Color3.fromRGB(210, 210, 220)
     end
-
     local function shiftCol(c, mul, add)
         return Color3.new(
             math.clamp(c.R * mul + (add or 0), 0, 1),
@@ -5434,7 +5077,6 @@ updateGunWireframe, clearGunWireframe = (function()
             math.clamp(c.B * mul + (add or 0), 0, 1)
         )
     end
-
     local function ensureWireFolder()
         if gunWireFolder and gunWireFolder.Parent then return gunWireFolder end
         local parent = nil
@@ -5446,7 +5088,6 @@ updateGunWireframe, clearGunWireframe = (function()
         gunWireFolder.Parent = parent
         return gunWireFolder
     end
-
     local function isLikelyWeaponModel(inst)
         if not inst or not inst.Parent then return false end
         if inst:IsA("Tool") then return true end
@@ -5460,7 +5101,6 @@ updateGunWireframe, clearGunWireframe = (function()
             or nl:find("gun", 1, true) or nl:find("weapon", 1, true) or nl:find("vm", 1, true)
             or nl:find("fp", 1, true) or nl:find("first", 1, true) or nl:find("sleeve", 1, true)
     end
-
     local function collectWeaponModels()
         local out, seen = {}, {}
         local function add(root)
@@ -5485,7 +5125,6 @@ updateGunWireframe, clearGunWireframe = (function()
         end
         return out
     end
-
     local function restoreGunWirePart(part)
         local orig = gunWireOrig[part]
         if not orig then return end
@@ -5510,7 +5149,6 @@ updateGunWireframe, clearGunWireframe = (function()
         local glow = gunWireGlow[part]
         if glow then pcall(function() glow:Destroy() end); gunWireGlow[part] = nil end
     end
-
     local function clear()
         for part in pairs(gunWireOrig) do
             restoreGunWirePart(part)
@@ -5532,7 +5170,6 @@ updateGunWireframe, clearGunWireframe = (function()
             gunWireFolder = nil
         end
     end
-
     local function stashPart(part)
         if gunWireOrig[part] then return end
         local tex, ltm = nil, nil
@@ -5550,7 +5187,6 @@ updateGunWireframe, clearGunWireframe = (function()
             LocalTransparencyModifier = ltm,
         }
     end
-
     local function makeWireAdornment(part, col, thickness, z, alwaysOnTop)
         local created = nil
         local okWire = pcall(function()
@@ -5579,7 +5215,6 @@ updateGunWireframe, clearGunWireframe = (function()
         box.Parent = ensureWireFolder()
         return box
     end
-
     local function ensureWirePair(part, col, thickness)
         local core = gunWireBoxes[part]
         local glow = gunWireGlow[part]
@@ -5628,7 +5263,6 @@ updateGunWireframe, clearGunWireframe = (function()
             glow.Visible = true
         end
     end
-
     local function ensureRootHighlight(root, col, fillT, outlineT)
         local hl = gunWireHighlights[root]
         if not hl or not hl.Parent then
@@ -5646,7 +5280,6 @@ updateGunWireframe, clearGunWireframe = (function()
         hl.Enabled = true
         return hl
     end
-
     local function shouldStylePart(part)
         if not part:IsA("BasePart") then return false end
         if part.Size.Magnitude < 0.08 then return false end
@@ -5656,7 +5289,6 @@ updateGunWireframe, clearGunWireframe = (function()
         local t = orig and orig.Transparency or part.Transparency
         return t < 0.98
     end
-
     local function applyGunWireframeToRoot(root)
         if not root or not root.Parent then return end
         local style = Settings.Visuals.GunWireframeStyle or "Wireframe"
@@ -5665,17 +5297,15 @@ updateGunWireframe, clearGunWireframe = (function()
         if partAlpha == nil then partAlpha = 0.88 end
         partAlpha = math.clamp(partAlpha, 0.05, 0.97)
         local thick = Settings.Visuals.GunWireframeThickness or 0.07
-
         if style == "Wireframe" then
             ensureRootHighlight(root, col, 0.92, 0.05)
         elseif style == "Outline" then
             ensureRootHighlight(root, col, 1, 0)
         elseif style == "Glass" then
             ensureRootHighlight(root, col, math.clamp(partAlpha, 0.55, 0.9), 0.2)
-        else -- Neon / Cyber
+        else
             ensureRootHighlight(root, col, math.clamp(partAlpha * 0.4, 0.15, 0.65), 0)
         end
-
         local parts = root:GetDescendants()
         if root:IsA("BasePart") then table.insert(parts, root) end
         for _, part in ipairs(parts) do
@@ -5726,7 +5356,6 @@ updateGunWireframe, clearGunWireframe = (function()
             end
         end
     end
-
     local function update()
         if not Settings.Visuals.GunWireframeEnabled then
             clear()
@@ -5766,10 +5395,8 @@ updateGunWireframe, clearGunWireframe = (function()
             end
         end
     end
-
     return update, clear
 end)()
-
 local function tryAutoRejoin(reason)
     if not Settings.Misc.AutoRejoin or autoRejoinBusy or isUnloading or _G[MW_T.unloaded] then return end
     autoRejoinBusy = true
@@ -5785,7 +5412,6 @@ local function tryAutoRejoin(reason)
         autoRejoinBusy = false
     end)
 end
-
 local function setupAutoRejoin()
     table.insert(allConnections, S.TeleportService.TeleportInitFailed:Connect(function()
         tryAutoRejoin("Teleport failed, retrying")
@@ -5801,7 +5427,6 @@ local function setupAutoRejoin()
         end
     end))
 end
-
 local rageRunning = false
 local startRageBot, stopRageBot
 startRageBot, stopRageBot = (function()
@@ -5844,7 +5469,6 @@ local function getRageTargets()
     end
     return list
 end
-
 local function tpRageToTarget(target, dist)
     if MW.guard("pos") or not MW.allows("rage") then return false end
     local myChar = player.Character
@@ -5876,7 +5500,6 @@ local function tpRageToTarget(target, dist)
     end
     return true
 end
-
 local function rageShootBurst(bursts)
     bursts = bursts or (Settings.Combat.RageShootBursts or 6)
     task.spawn(function()
@@ -5892,11 +5515,9 @@ local function rageShootBurst(bursts)
         pcall(simulateFireRelease)
     end)
 end
-
 local function haltRageLoop()
     rageRunning = false
 end
-
 local function start()
     if MW.guard("pos") or not MW.allows("rage") then
         Settings.Combat.RageBot = false
@@ -5934,7 +5555,6 @@ local function start()
         haltRageLoop()
     end)
 end
-
 local function stop()
     haltRageLoop()
     Settings.Combat.RageBot = false
@@ -5942,4 +5562,3 @@ local function stop()
 end
 return start, stop
 end)()
-

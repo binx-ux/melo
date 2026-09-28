@@ -1,0 +1,24 @@
+name: Bug
+description: Something in Melo broke
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: input
+    id: executor
+    attributes:
+      label: Executor
+      placeholder: Real
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+    validations:
+      required: true

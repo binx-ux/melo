@@ -1,0 +1,17 @@
+name: Change
+description: A change you want in Melo
+title: "[change] "
+labels: ["change"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should change
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+    validations:
+      required: true

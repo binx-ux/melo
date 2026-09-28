@@ -27,22 +27,18 @@ function UILib.createGUI()
         pcall(function() game:GetService("RunService").Heartbeat:Wait() end)
         task.wait(0.55)
     end
-
     step(4, "starting")
     pcall(function()
         game:GetService("RunService").RenderStepped:Wait()
         game:GetService("RunService").Heartbeat:Wait()
     end)
-
     step(16, "fingerprint")
     pcall(function()
         if MW_T.force then MW_T.force() end
     end)
-
     step(34, "executor check")
     Cap.awaitWeao(0.85)
     Cap.disableUnsupportedSettings(Settings)
-
     step(52, "remotes")
     pcall(function()
         local rs = game:GetService("ReplicatedStorage")
@@ -70,7 +66,6 @@ function UILib.createGUI()
             end)
         end
     end)
-
     step(64, "checks")
     if Cap.isWeak() then
         if loader and loader.close then pcall(loader.close) end
@@ -83,20 +78,16 @@ function UILib.createGUI()
             error("[" .. MW.hub .. "] Unloaded: weak executor")
         end
     end
-
     step(72, "checks")
     pcall(function()
         Cap.recompute()
         Cap.apply()
     end)
-
     step(78, "building menu")
-
     local screenGui = UILib.newScreenGui(MW_T.gui, 20)
     screenGui.DisplayOrder = 20
     UILib.ActiveThemeRoot = screenGui
     notifScreenGui = screenGui
-
     local overlayLayer = UILib.layer(screenGui, 1)
     espBillboardLayer = UILib.newFrame(overlayLayer, {
         Name = MW_T.next(8),
@@ -108,13 +99,12 @@ function UILib.createGUI()
     local windowLayer = UILib.layer(screenGui, 15)
     local notifLayer = UILib.layer(screenGui, 50)
     notifLayerRef = notifLayer
-
     UILib.setupWorldOverlays(overlayLayer)
     TraceV2BindMD(UILib.MD)
     pcall(function()
         if UILib.mountGunModsTestingOverlay then UILib.mountGunModsTestingOverlay() end
     end)
-    -- Keep buildMenuWindow for loops/keybinds; hide ScreenGui chrome when Drawing menu mounts
+
     UILib.buildMenuWindow(screenGui, windowLayer)
     step(90, "drawing menu")
     local usedDraw = false
@@ -133,7 +123,7 @@ function UILib.createGUI()
     end
     if usedDraw or (UILib.TraceDraw and UILib.TraceDraw._window) then
         usedDraw = true
-        -- Drawing is primary UI. ScreenGui hub stays built (loops/keybinds) but hidden.
+
         pcall(function()
             UILib._hubWindowLayer = windowLayer
             windowLayer.Visible = false
@@ -169,7 +159,7 @@ function UILib.createGUI()
                 end)
             end
             UILib.showFullHub = function()
-                -- kept for emergency only; not exposed in Drawing menu
+
                 pcall(function()
                     if UILib.TraceDraw and UILib.TraceDraw.SetOpen then
                         UILib.TraceDraw.SetOpen(false)
@@ -187,7 +177,7 @@ function UILib.createGUI()
                 end)
             end
         end)
-        -- hide again next frame in case something re-opens hub during boot
+
         task.defer(function()
             if isUnloading or _G[MW_T.unloaded] then return end
             if UILib.showDrawingMenu then UILib.showDrawingMenu() end
@@ -205,7 +195,6 @@ function UILib.createGUI()
             if kit and type(kit.boot) == "function" then kit.boot() end
         end)
     end)
-
     registerPostLoad(function()
         ensureUISettings()
         applyCustomTheme()
@@ -270,11 +259,9 @@ function UILib.createGUI()
             end))
         end)
     end)
-
     applyStreamerPrivacy()
     return screenGui
 end
-
 do
     local ok, guiOrErr = xpcall(function()
         return UILib.createGUI()
@@ -283,18 +270,15 @@ do
         pcall(function() tb = debug.traceback("", 2) end)
         return tostring(err) .. (tb ~= "" and ("\n" .. tb) or "")
     end)
-
     if not ok then
         TraceLog.pushError(guiOrErr)
         TraceLog.send("error")
         error("[" .. MW.hub .. "] load failed")
     end
-
     local gui = guiOrErr
     ensureUISettings()
     pcall(applyCustomTheme)
     pcall(function() FX.hookAntiCheat() end)
-
     _G[MW_T.cleanup] = function()
         if _G[MW_T.unloadBusy] then return end
         _G[MW_T.unloadBusy] = true
@@ -312,14 +296,12 @@ do
         end)
         if TraceHUD and TraceHUD.destroy then pcall(TraceHUD.destroy) end
 
-        -- Hide hub immediately, then play reverse TRACE outro
         pcall(function()
             if gui and gui.Parent then gui.Enabled = false end
         end)
         pcall(function()
             UILib.showUnloader()
         end)
-
         Settings.ESP.Enabled = false
         Settings.Combat.FastReload = false; Settings.Combat.FastFireRate = false
         Settings.Combat.AlwaysAuto = false; Settings.Combat.NoSpread = false; Settings.Combat.NoRecoil = false
@@ -349,31 +331,26 @@ do
         _G[MW_T.cleanup] = nil
         _G[MW_T.unloadBusy] = nil
     end
-
     if not checkIntegrity() then
         TraceLog.pushError("integrity warning")
         task.delay(2,function() sendNotification("Warning","Tampered script detected",8) end)
     end
-
     TraceLog.send("ok")
     task.delay(1,function() sendNotification(MW.hub,"Loaded | "..getExecutorName().." | RightCtrl = toggle",4) end)
     hookMatchModeDetect()
     task.defer(function() refreshMatchModeDetect(false) end)
-
     task.delay(8, function()
         local function parseChangelogPayload(raw)
             local ok, data = pcall(function() return S.HttpService:JSONDecode(raw) end)
             if not ok or type(data) ~= "table" then return nil end
             return data
         end
-
         local function fetchUpdateChangelog()
             if not MW.changelogUrl or MW.changelogUrl == "" then return nil end
             local ok, raw = pcall(function() return game:HttpGet(MW.changelogUrl) end)
             if not ok or not raw or raw == "" then return nil end
             return parseChangelogPayload(raw)
         end
-
         local function formatChangelogNotice(remoteNum, data)
             local msg = "v1." .. string.format("%03d", remoteNum) .. " is available. You have " .. MW.display
             if data then
@@ -394,7 +371,6 @@ do
             end
             return msg
         end
-
         if not MW.versionUrl or MW.versionUrl == "" then return end
         local localNum = tonumber(MW.version)
         if not localNum then return end
@@ -407,5 +383,4 @@ do
         end
     end)
 end
-
 end)()

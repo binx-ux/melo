@@ -1,5 +1,3 @@
--- Trace MM2 (PlaceId 142823291)
--- Own IIFE for Luau local limit
 local TraceMM2 = (function()
 local TraceMM2 = {
     running = false,
@@ -22,7 +20,6 @@ local TraceMM2 = {
     mouseHooked = false,
     last = { roles = 0, esp = 0, gun = 0, grab = 0, combat = 0, afk = 0, killAura = 0, autoKill = 0, autoEnd = 0, blatant = 0 },
 }
-
 local RS = game:GetService("ReplicatedStorage")
 local VU = game:GetService("VirtualUser")
 local Players = S.Players
@@ -30,37 +27,30 @@ local Workspace = S.Workspace
 local RunService = S.RunService
 local UIS = S.UserInputService
 local Cam = Workspace.CurrentCamera
-
 local function cfg()
     return Settings and Settings.MM2
 end
-
 local function addConn(c)
     if c then TraceMM2.conns[#TraceMM2.conns + 1] = c end
     return c
 end
-
 local function hrpOf(plr)
     local c = plr and plr.Character
     return c and c:FindFirstChild("HumanoidRootPart")
 end
-
 local function myHRP()
     return hrpOf(player)
 end
-
 local function myHum()
     local c = player.Character
     return c and c:FindFirstChildOfClass("Humanoid")
 end
-
 local function roleColor(role)
     if role == "Murderer" then return Color3.fromRGB(255, 70, 80) end
     if role == "Sheriff" or role == "Hero" then return Color3.fromRGB(70, 140, 255) end
     if role == "Unknown" then return Color3.fromRGB(160, 160, 170) end
     return Color3.fromRGB(235, 235, 240)
 end
-
 local function fireTouch(a, b)
     if typeof(firetouchinterest) ~= "function" or not a or not b then return end
     pcall(firetouchinterest, a, b, 0)
@@ -68,11 +58,9 @@ local function fireTouch(a, b)
     pcall(firetouchinterest, b, a, 0)
     pcall(firetouchinterest, b, a, 1)
 end
-
 local function find(parent, name)
     return parent and parent:FindFirstChild(name) or nil
 end
-
 function TraceMM2.refreshRemotes()
     local remotes = find(RS, "Remotes")
     local gameplay = find(remotes, "Gameplay")
@@ -112,7 +100,6 @@ function TraceMM2.refreshRemotes()
         end
     end
 end
-
 function TraceMM2.applyRoleData(data)
     if type(data) ~= "table" then return end
     for name, info in pairs(data) do
@@ -129,7 +116,6 @@ function TraceMM2.applyRoleData(data)
         end
     end
 end
-
 function TraceMM2.refreshRoles()
     TraceMM2.refreshRemotes()
     local data
@@ -188,7 +174,6 @@ function TraceMM2.refreshRoles()
         end
     end
 end
-
 function TraceMM2.getRole(plr)
     if not plr then return "Innocent" end
     local crc = TraceMM2.crc
@@ -199,7 +184,6 @@ function TraceMM2.getRole(plr)
     local e = TraceMM2.roleCache[plr.Name]
     return (e and e.Role) or "Innocent"
 end
-
 function TraceMM2.isDead(plr)
     local crc = TraceMM2.crc
     if crc and type(crc.PlayerData) == "table" then
@@ -209,7 +193,6 @@ function TraceMM2.isDead(plr)
     local e = TraceMM2.roleCache[plr.Name]
     return e and e.Dead == true
 end
-
 function TraceMM2.canTarget(plr)
     if not plr or plr == player then return false end
     if TraceMM2.isDead(plr) then return false end
@@ -217,7 +200,6 @@ function TraceMM2.canTarget(plr)
     if hum and hum.Health <= 0 then return false end
     return hrpOf(plr) ~= nil
 end
-
 local function ensureDraw(plr)
     if plr == player then return nil end
     local char = plr.Character
@@ -269,14 +251,12 @@ local function ensureDraw(plr)
     TraceMM2.draw[plr] = pack
     return pack
 end
-
 function TraceMM2.destroyDraw(plr)
     local pack = TraceMM2.draw[plr]
     if not pack then return end
     pcall(function() if pack.bb then pack.bb:Destroy() end end)
     TraceMM2.draw[plr] = nil
 end
-
 function TraceMM2.refreshESP()
     local c = cfg()
     local on = c and c.NameESP
@@ -301,14 +281,12 @@ function TraceMM2.refreshESP()
         if not plr.Parent then TraceMM2.destroyDraw(plr) end
     end
 end
-
 function TraceMM2.clearChams()
     for plr, hl in pairs(TraceMM2.chams) do
         pcall(function() if hl then hl:Destroy() end end)
         TraceMM2.chams[plr] = nil
     end
 end
-
 function TraceMM2.refreshChams()
     local c = cfg()
     if not c or not c.PlayerChams then
@@ -340,7 +318,6 @@ function TraceMM2.refreshChams()
         end
     end
 end
-
 function TraceMM2.clearGunEsp()
     for part, pack in pairs(TraceMM2.gunEsp) do
         pcall(function()
@@ -350,7 +327,6 @@ function TraceMM2.clearGunEsp()
         TraceMM2.gunEsp[part] = nil
     end
 end
-
 function TraceMM2.refreshGunEsp()
     local c = cfg()
     if not c or not c.GunESP then
@@ -384,7 +360,6 @@ function TraceMM2.refreshGunEsp()
         end
     end
 end
-
 function TraceMM2.setFarmNoclip(on)
     local char = player.Character
     if not char then return end
@@ -403,7 +378,6 @@ function TraceMM2.setFarmNoclip(on)
         TraceMM2.farmNoclip = {}
     end
 end
-
 local function listCoins()
     local out = {}
     local container = Workspace:FindFirstChild("CoinContainer", true)
@@ -440,7 +414,6 @@ local function listCoins()
     end
     return out
 end
-
 local function pickCoin(fromPos)
     local coins = listCoins()
     if #coins == 0 then return nil end
@@ -458,7 +431,6 @@ local function pickCoin(fromPos)
     end
     return best or coins[1]
 end
-
 local function fireGetCoin(coin)
     local getCoin = TraceMM2.remotes.GetCoin
     if not getCoin then return end
@@ -468,7 +440,6 @@ local function fireGetCoin(coin)
     pcall(function() getCoin:FireServer(coin) end)
     pcall(function() getCoin:FireServer(coin.Position) end)
 end
-
 function TraceMM2.collectCoin(coin)
     local root = myHRP()
     if not root or not coin then return end
@@ -512,7 +483,6 @@ function TraceMM2.collectCoin(coin)
         TraceMM2.farmingActive = false
     end
 end
-
 function TraceMM2.farmLoop()
     if TraceMM2.farmBusy then return end
     TraceMM2.farmBusy = true
@@ -539,7 +509,6 @@ function TraceMM2.farmLoop()
         TraceMM2.farmBusy = false
     end)
 end
-
 function TraceMM2.tickGrabGun()
     local c = cfg()
     if not c or not c.AutoGrabGun then return end
@@ -561,7 +530,6 @@ function TraceMM2.tickGrabGun()
         pcall(function() gw:FireServer(part) end)
     end
 end
-
 function TraceMM2.getMurdererRoot()
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= player and TraceMM2.getRole(plr) == "Murderer" and TraceMM2.canTarget(plr) then
@@ -570,7 +538,6 @@ function TraceMM2.getMurdererRoot()
         end
     end
 end
-
 function TraceMM2.silentAimCFrame()
     local tRoot = select(1, TraceMM2.getMurdererRoot())
     if not tRoot then
@@ -592,7 +559,6 @@ function TraceMM2.silentAimCFrame()
     local vel = tRoot.AssemblyLinearVelocity
     return CFrame.new(tRoot.Position + Vector3.new(vel.X * 0.12, 0, vel.Z * 0.12))
 end
-
 function TraceMM2.invokeEliminate(plr)
     local elim = TraceMM2.remotes.EliminatePlayer
     if not elim or not plr then return false end
@@ -601,7 +567,6 @@ function TraceMM2.invokeEliminate(plr)
     local ok3 = pcall(function() elim:InvokeServer(plr.UserId) end)
     return ok1 or ok2 or ok3
 end
-
 function TraceMM2.equipKnife()
     local char = player.Character
     if char then
@@ -622,7 +587,6 @@ function TraceMM2.equipKnife()
     end
     return nil
 end
-
 function TraceMM2.tryKnifeHit(plr)
     local root = myHRP()
     local tRoot = hrpOf(plr)
@@ -647,7 +611,6 @@ function TraceMM2.tryKnifeHit(plr)
     TraceMM2.combatActive = false
     return true
 end
-
 function TraceMM2.shootMurderer(manual)
     if TraceMM2.shootBusy then return end
     TraceMM2.refreshRemotes()
@@ -728,7 +691,6 @@ function TraceMM2.shootMurderer(manual)
         TraceMM2.combatActive = false
     end)
 end
-
 function TraceMM2.tickKillAura()
     local c = cfg()
     if not c or not c.KillAura then return end
@@ -749,7 +711,6 @@ function TraceMM2.tickKillAura()
         end
     end
 end
-
 function TraceMM2.tickAntiFling()
     local c = cfg()
     if not c or not c.AntiFling then return end
@@ -768,7 +729,6 @@ function TraceMM2.tickAntiFling()
         root.CFrame = TraceMM2.lastSafeCF
     end
 end
-
 function TraceMM2.installSilentAim()
     TraceMM2.refreshRemotes()
     if not TraceMM2.mouseHooked and TraceMM2.WeaponService and type(TraceMM2.WeaponService.GetMouseTargetCFrame) == "function" then
@@ -823,7 +783,6 @@ function TraceMM2.installSilentAim()
         return TraceMM2.oldNamecall(self, ...)
     end)
 end
-
 function TraceMM2.bindEvents()
     TraceMM2.refreshRemotes()
     local function onRoles(data)
@@ -877,7 +836,6 @@ function TraceMM2.bindEvents()
         if hl then pcall(function() hl:Destroy() end); TraceMM2.chams[plr] = nil end
     end))
 end
-
 function TraceMM2.tick(dt)
     if not TraceMM2.running then return end
     if not (MW.isMM2 or (game.PlaceId == (MW.places and MW.places.MM2))) then return end
@@ -885,19 +843,17 @@ function TraceMM2.tick(dt)
     if not c then return end
     local now = tick()
     TraceMM2.tickAntiFling()
-
     if now - TraceMM2.last.roles >= 0.5 then
         TraceMM2.last.roles = now
         pcall(TraceMM2.refreshRoles)
     end
-    -- ESP every frame for smooth Drawing
+
     pcall(TraceMM2.refreshESP)
     if now - TraceMM2.last.gun >= 0.4 then
         TraceMM2.last.gun = now
         if c.PlayerChams then pcall(TraceMM2.refreshChams) else TraceMM2.clearChams() end
         if c.GunESP then pcall(TraceMM2.refreshGunEsp) else TraceMM2.clearGunEsp() end
     end
-
     TraceMM2.last.combat = (TraceMM2.last.combat or 0) + (dt or 0.016)
     if TraceMM2.last.combat >= 0.25 then
         TraceMM2.last.combat = 0
@@ -944,7 +900,6 @@ function TraceMM2.tick(dt)
             end
         end
     end
-
     if c.AutoFarm and not TraceMM2.farmBusy then
         TraceMM2.farmLoop()
     end
@@ -953,7 +908,6 @@ function TraceMM2.tick(dt)
         pcall(function() VU:CaptureController(); VU:ClickButton2(Vector2.new()) end)
     end
 end
-
 function TraceMM2.start()
     if TraceMM2.running then return end
     TraceMM2.running = true
@@ -980,7 +934,6 @@ function TraceMM2.start()
         warn("[Melo 🍃] MM2 kit started")
     end)
 end
-
 function TraceMM2.stop()
     TraceMM2.running = false
     if Settings.MM2 then Settings.MM2.AutoFarm = false end
@@ -993,14 +946,9 @@ function TraceMM2.stop()
     TraceMM2.clearGunEsp()
     TraceMM2.clearChams()
 end
-
 return TraceMM2
 end)()
 MW.TraceMM2 = TraceMM2
-
--- Phantom Forces (PlaceId 292439477)
--- Resolve via getrenv.shared / ClientLoader / getgc require.
--- Bodies live on entry._thirdPersonObject (_characterHash / _torso), not Player.Character.
 local TracePF = (function()
 local TracePF = {
     running = false,
@@ -1037,23 +985,19 @@ local TracePF = {
     _softGuns = {},
     _softScanAt = 0,
 }
-
 local Players = S.Players
 local RunService = S.RunService
 local VU = game:GetService("VirtualUser")
 local LocalPlayer = player
 local ZERO = Vector3.new(0, 0, 0)
 local DOT = ZERO.Dot
-
 local function cfg()
     return Settings and Settings.PF
 end
-
 local function addConn(c)
     if c then TracePF.conns[#TracePF.conns + 1] = c end
     return c
 end
-
 local function wrap(fn)
     if type(newcclosure) == "function" then
         local ok, w = pcall(newcclosure, fn)
@@ -1061,7 +1005,6 @@ local function wrap(fn)
     end
     return fn
 end
-
 local function dbgGetInfo(fn, level)
     if type(debug) ~= "table" or type(debug.getinfo) ~= "function" then return nil end
     local ok, info = pcall(debug.getinfo, fn or level, level and "n" or nil)
@@ -1072,7 +1015,6 @@ local function dbgGetInfo(fn, level)
     end
     return nil
 end
-
 local function dbgGetUpvalue(fn, idx)
     if type(debug) ~= "table" then return nil end
     if type(debug.getupvalue) == "function" then
@@ -1088,7 +1030,6 @@ local function dbgGetUpvalue(fn, idx)
     end
     return nil
 end
-
 local function cloneFn(fn)
     if type(fn) ~= "function" then return fn end
     if type(clonefunction) == "function" then
@@ -1097,7 +1038,6 @@ local function cloneFn(fn)
     end
     return fn
 end
-
 local function findPfRequire()
     pcall(function()
         if type(getrenv) == "function" then
@@ -1111,7 +1051,6 @@ local function findPfRequire()
         end
     end)
     if TracePF.pfRequire then return TracePF.pfRequire end
-
     pcall(function()
         if type(getnilinstances) ~= "function" or type(getsenv) ~= "function" then return end
         local list = getnilinstances()
@@ -1127,7 +1066,6 @@ local function findPfRequire()
         end
     end)
     if TracePF.pfRequire then return TracePF.pfRequire end
-
     pcall(function()
         if type(getgc) ~= "function" then return end
         local list = getgc(false)
@@ -1151,7 +1089,6 @@ local function findPfRequire()
     end)
     return TracePF.pfRequire
 end
-
 local function requirePf(name)
     local req = TracePF.pfRequire or findPfRequire()
     if type(req) ~= "function" then return nil end
@@ -1159,7 +1096,6 @@ local function requirePf(name)
     if ok and type(mod) == "table" then return mod end
     return nil
 end
-
 local function findReplFromGc()
     if type(getgc) ~= "function" then return nil end
     local ok, list = pcall(getgc, true)
@@ -1175,7 +1111,6 @@ local function findReplFromGc()
     end
     return nil
 end
-
 local function findModuleFromGc(pred)
     if type(getgc) ~= "function" then return nil end
     local ok, list = pcall(getgc, true)
@@ -1186,7 +1121,6 @@ local function findModuleFromGc(pred)
     end
     return nil
 end
-
 local function pullEntriesTable(repl)
     if type(repl) ~= "table" then return nil end
     local function looksLikeEntries(t)
@@ -1225,7 +1159,6 @@ local function pullEntriesTable(repl)
     end)
     return ups
 end
-
 local function cacheExtraModules()
     if not TracePF.network then
         TracePF.network = requirePf("NetworkClient") or findModuleFromGc(function(v)
@@ -1251,7 +1184,6 @@ local function cacheExtraModules()
         TracePF.publicSettings = requirePf("PublicSettings")
     end
 end
-
 function TracePF.refreshModules(force)
     if TracePF.repl and not force then
         if not TracePF.entries then
@@ -1290,7 +1222,6 @@ function TracePF.refreshModules(force)
     TracePF.status = "waiting"
     return false
 end
-
 local function entryOf(plr)
     if not plr then return nil end
     if type(TracePF.entries) == "table" then
@@ -1305,7 +1236,6 @@ local function entryOf(plr)
     end
     return nil
 end
-
 local function isEnemyPlayer(plr)
     if not plr or plr == LocalPlayer then return false end
     local c = cfg()
@@ -1319,7 +1249,6 @@ local function isEnemyPlayer(plr)
     if ok and same then return false end
     return true
 end
-
 local function aliveEntry(entry)
     if type(entry) ~= "table" then return false end
     if rawget(entry, "_alive") == true then return true end
@@ -1331,7 +1260,6 @@ local function aliveEntry(entry)
     end)
     return ok and alive == true
 end
-
 local function getTpo(entry)
     if type(entry) ~= "table" then return nil end
     local tpo = rawget(entry, "_thirdPersonObject")
@@ -1344,7 +1272,6 @@ local function getTpo(entry)
     if ok then return res end
     return nil
 end
-
 local function getHash(tpo)
     if type(tpo) ~= "table" then return nil end
     local hash = rawget(tpo, "_characterModelHash") or rawget(tpo, "_characterHash") or rawget(tpo, "_character")
@@ -1359,14 +1286,12 @@ local function getHash(tpo)
     if ok and type(res) == "table" then return res end
     return nil
 end
-
 local function partFromHash(hash, name)
     if type(hash) ~= "table" then return nil end
     local p = hash[name] or hash[string.lower(name)] or hash[string.upper(name)]
     if typeof(p) == "Instance" and p:IsA("BasePart") then return p end
     return nil
 end
-
 local function makeCharProxy(hash, model)
     local proxy = {
         Head = partFromHash(hash, "Head"),
@@ -1435,12 +1360,10 @@ local function makeCharProxy(hash, model)
     }
     return setmetatable(proxy, mt)
 end
-
 function TracePF.getEntry(plr)
     if not TracePF.repl then TracePF.refreshModules() end
     return entryOf(plr)
 end
-
 function TracePF.getModel(plr)
     if not TracePF.repl then TracePF.refreshModules() end
     local entry = entryOf(plr)
@@ -1459,7 +1382,6 @@ function TracePF.getModel(plr)
     end
     return model
 end
-
 function TracePF.getWeaponName(plr)
     local entry = entryOf(plr)
     if not entry then return nil end
@@ -1481,7 +1403,6 @@ function TracePF.getWeaponName(plr)
     if ok and name and name ~= "" then return tostring(name) end
     return nil
 end
-
 function TracePF.getTeamColor(plr)
     if not plr then return nil end
     local ok, name = pcall(function()
@@ -1497,7 +1418,6 @@ function TracePF.getTeamColor(plr)
     end
     return nil
 end
-
 function TracePF.getPlayerFromPart(part)
     if not part then return nil end
     TracePF.refreshModules()
@@ -1516,13 +1436,12 @@ function TracePF.getPlayerFromPart(part)
     end
     return nil
 end
-
 function TracePF.getRig(plr)
     if not plr or plr == LocalPlayer then return nil end
     if not TracePF.repl then TracePF.refreshModules() end
     local entry = entryOf(plr)
     if not entry then
-        -- getEntry path without upvalue table
+
         if TracePF.repl and type(TracePF.repl.getEntry) == "function" then
             local ok, e = pcall(TracePF.repl.getEntry, plr)
             if ok then entry = e end
@@ -1534,10 +1453,9 @@ function TracePF.getRig(plr)
     end
     local cached = TracePF.cache[plr]
     if cached and cached._entry == entry and cached.root and cached.root.Parent then
-        -- cheap refresh of lock part preference
+
         return cached
     end
-
     local tpo = getTpo(entry)
     if not tpo then return nil end
     local hash = getHash(tpo)
@@ -1554,7 +1472,6 @@ function TracePF.getRig(plr)
     root = root or head
     local preferHead = not cfg() or cfg().PreferHead ~= false
     local lock = (preferHead and head) or torso or root
-
     local normHash = {
         Head = head,
         Torso = torso,
@@ -1563,7 +1480,6 @@ function TracePF.getRig(plr)
         ["Left Leg"] = partFromHash(hash, "Left Leg"),
         ["Right Leg"] = partFromHash(hash, "Right Leg"),
     }
-
     local data = {
         _char = makeCharProxy(normHash, model),
         _entry = entry,
@@ -1633,7 +1549,6 @@ function TracePF.getRig(plr)
     TracePF.cache[plr] = data
     return data
 end
-
 function TracePF.operate(fn)
     TracePF.refreshModules()
     if TracePF.repl and type(TracePF.repl.operateOnAllEntries) == "function" then
@@ -1646,13 +1561,11 @@ function TracePF.operate(fn)
         end
     end
 end
-
 local function silentFovRadius()
     local c = cfg()
     if not c or c.SilentFOVOnly == false then return 1e9 end
     return tonumber(c.SilentFOV) or tonumber(Settings.Aimbot and Settings.Aimbot.SilentFOVRadius) or 220
 end
-
 local function rollSilent()
     local now = tick()
     if now >= TracePF._roll.next then
@@ -1661,19 +1574,16 @@ local function rollSilent()
         TracePF._roll.head = math.random(1, 100)
     end
 end
-
 local function wantHead()
     local c = cfg()
     local headChance = tonumber(c and c.HeadChance) or 70
     return TracePF._roll.head <= headChance
 end
-
 local function passHitChance()
     local c = cfg()
     local hit = tonumber(c and c.HitChance) or 100
     return TracePF._roll.miss <= hit
 end
-
 local function trajectory(origin, accel, target, speed, enemyVel)
     local f = -accel
     local ld = target - origin
@@ -1696,7 +1606,6 @@ local function trajectory(origin, accel, target, speed, enemyVel)
     t = t ^ 0.5
     return f * t / 2 + (enemyVel or ZERO) + ld / t, t
 end
-
 local function getBulletAccel()
     local ps = TracePF.publicSettings
     if type(ps) == "table" and typeof(ps.bulletAcceleration) == "Vector3" then
@@ -1704,7 +1613,6 @@ local function getBulletAccel()
     end
     return Vector3.new(0, -196.2, 0)
 end
-
 local function updateAimCache()
     local c = cfg()
     if not c or c.SilentAim == false then
@@ -1724,7 +1632,6 @@ local function updateAimCache()
         partName = "Head"
     end
     local bestDist, bestPos, bestEntry, bestVel = fov, nil, nil, ZERO
-
     local function consider(plr, entry)
         if not isEnemyPlayer(plr) or not aliveEntry(entry) then return end
         local tpo = getTpo(entry)
@@ -1750,7 +1657,6 @@ local function updateAimCache()
             end
         end
     end
-
     if TracePF.repl and type(TracePF.repl.operateOnAllEntries) == "function" then
         pcall(TracePF.repl.operateOnAllEntries, consider)
     elseif type(TracePF.entries) == "table" then
@@ -1771,13 +1677,11 @@ local function updateAimCache()
             if entry then consider(plr, entry) end
         end
     end
-
     if c.Predict == false then bestVel = ZERO end
     TracePF._aim.pos = bestPos
     TracePF._aim.vel = bestVel
     TracePF._aim.entry = bestEntry
 end
-
 local function getClosestSilent()
     local aim = TracePF._aim
     if aim and aim.pos then
@@ -1785,7 +1689,6 @@ local function getClosestSilent()
     end
     return nil
 end
-
 local function installSilentAim()
     local c = cfg()
     if not c or c.SilentAim == false then
@@ -1795,12 +1698,10 @@ local function installSilentAim()
     TracePF.refreshModules(true)
     cacheExtraModules()
     rollSilent()
-
     local method = tostring(c.SilentMethod or "FireRound")
     local wantNet = method == "Network" or method == "Auto"
     local wantFire = method == "FireRound" or method == "Auto" or method == nil
 
-    -- FireRound path: flag + cached aim (no debug.getinfo, no per-bullet scans)
     if wantFire and TracePF.characterObject and not TracePF.silentHooks.getRootPart then
         local co = TracePF.characterObject
         local oldGet = cloneFn(co.getRootPart)
@@ -1819,7 +1720,6 @@ local function installSilentAim()
         end)
         TracePF.silentHooks.getRootPart = true
     end
-
     if wantFire and TracePF.firearmObject and not TracePF.silentHooks.fireRound then
         local fo = TracePF.firearmObject
         local oldFire = cloneFn(fo.fireRound)
@@ -1852,7 +1752,6 @@ local function installSilentAim()
         TracePF.silentHooks.fireRound = true
     end
 
-    -- Network path only when selected (or Auto and fire hooks failed)
     if wantNet and (method == "Network" or not TracePF.silentHooks.fireRound) and TracePF.network and not TracePF.silentHooks.network then
         local net = TracePF.network
         local oldSend = cloneFn(net.send)
@@ -1907,9 +1806,7 @@ local function installSilentAim()
         TracePF.silentHooks.network = ok
     end
 
-    -- Skip BulletObject.new hook by default (double work + lag on every pellet)
     TracePF.silentHooks.bullet = false
-
     local bits = {}
     if TracePF.silentHooks.network then bits[#bits + 1] = "net" end
     if TracePF.silentHooks.getRootPart then bits[#bits + 1] = "root" end
@@ -1921,7 +1818,6 @@ local function installSilentAim()
     TracePF.silentStatus = table.concat(bits, "+")
     return true
 end
-
 local function softGunMods()
     local c = cfg()
     if not c or (not c.SoftNoRecoil and not c.SoftNoSpread) then return end
@@ -1962,7 +1858,6 @@ local function softGunMods()
         end
     end
 end
-
 function TracePF.tick()
     if not TracePF.running then return end
     if not (MW.isPF or game.PlaceId == (MW.places and MW.places.PhantomForces)) then return end
@@ -2005,7 +1900,6 @@ function TracePF.tick()
         end)
     end
 end
-
 function TracePF.start()
     if TracePF.running then return end
     TracePF.running = true
@@ -2044,14 +1938,12 @@ function TracePF.start()
         sendNotification("Melo 🍃", msg, 4)
     end
 end
-
 function TracePF.stop()
     TracePF.running = false
     for _, c in ipairs(TracePF.conns) do pcall(function() c:Disconnect() end) end
     TracePF.conns = {}
     TracePF.cache = {}
 end
-
 function TracePF.reinstallSilent()
     TracePF.silentHooks.network = false
     TracePF.silentHooks.bullet = false
@@ -2065,11 +1957,9 @@ function TracePF.reinstallSilent()
     TracePF.publicSettings = nil
     return installSilentAim()
 end
-
 TracePF.isEnemyPlayer = isEnemyPlayer
 TracePF.installSilentAim = installSilentAim
 TracePF.getClosestSilent = getClosestSilent
 return TracePF
 end)()
 MW.TracePF = TracePF
-
