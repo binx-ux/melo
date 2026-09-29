@@ -1,6 +1,6 @@
 # Contributing
 
-You can change Melo. Keep the credits for anthony price and Luna in every file you touch. Do not sell the code or a changed copy.
+You can change Melo. Keep the credits for kyn and Luna in every file you touch. Do not sell the code or a changed copy.
 
 ## Changes
 
